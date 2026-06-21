@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FA / MA — Practice Exam (SOWISO style)</title>
+<style>
+  :root{
+    --bg:#e6e7f6; --card:#ffffff; --ink:#3c3c5c; --muted:#6b6b86;
+    --accent:#b81f63; --accent2:#c0286e; --navy:#3f3d56; --blue:#3f6fb0;
+    --line:#e3e3ee; --green:#cfe6a4; --greenHead:#bcd98a; --greenInk:#3a4a23;
+    --good:#3f8a3f; --bad:#c0392b; --dotgrey:#cfcfe0; --dotgreen:#5fb15f; --dotred:#d98b8b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Segoe UI",Nunito,system-ui,-apple-system,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); display:flex; min-height:100vh;
+  }
+  /* ---------- Sidebar ---------- */
+  #sidebar{
+    width:280px; flex:0 0 280px; background:#f4f4fb; border-right:1px solid #dcdcec;
+    height:100vh; overflow-y:auto; padding:18px 14px 40px;
+  }
+  #sidebar h1{font-size:17px; margin:4px 6px 2px; color:var(--navy)}
+  #sidebar .sub{font-size:12px; color:var(--muted); margin:0 6px 14px}
+  .score{background:#fff;border:1px solid #e0e0ee;border-radius:12px;padding:10px 12px;margin:0 4px 16px;font-size:13px}
+  .score b{font-size:20px;color:var(--accent)}
+  .score .bar{height:8px;border-radius:6px;background:#ececf5;margin-top:8px;overflow:hidden}
+  .score .bar i{display:block;height:100%;background:var(--dotgreen);width:0%}
+  .secttl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);margin:16px 8px 6px}
+  .navitem{
+    display:flex;align-items:center;gap:9px;padding:7px 10px;margin:2px 2px;border-radius:9px;
+    cursor:pointer;font-size:13.5px;color:var(--ink);
+  }
+  .navitem:hover{background:#ececf8}
+  .navitem.active{background:#e3e1f5;font-weight:600}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--dotgrey);flex:0 0 11px;border:1px solid rgba(0,0,0,.06)}
+  .dot.correct{background:var(--dotgreen)}
+  .dot.attempted{background:var(--dotred)}
+  .navitem .pts{margin-left:auto;font-size:11px;color:var(--muted)}
+  .resetbtn{margin:18px 6px 0;font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline}
+
+  /* ---------- Main ---------- */
+  #main{flex:1;height:100vh;overflow-y:auto;padding:34px 26px 40px;display:block}
+  .stage{width:100%;max-width:940px;margin:0 auto;padding-bottom:48px}
+  .progressdots{display:flex;gap:8px;margin:0 0 14px 4px}
+  .progressdots .d{width:15px;height:15px;border-radius:50%;background:var(--dotgrey);border:2px solid #fff;box-shadow:0 0 0 1px #d0d0e0}
+  .progressdots .d.correct{background:var(--dotgreen);box-shadow:0 0 0 1px var(--dotgreen)}
+  .progressdots .d.attempted{background:var(--dotred);box-shadow:0 0 0 1px var(--dotred)}
+
+  .card{background:var(--card);border-radius:18px;box-shadow:0 10px 30px rgba(60,60,110,.10);padding:30px 34px 34px;position:relative}
+  .crumb{font-size:12.5px;color:var(--muted);margin-bottom:6px}
+  .qtitle{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:800;color:var(--navy);margin:2px 0 0}
+  .qtitle .pencil{color:var(--accent)}
+  .qtitle .badge{margin-left:auto;font-size:12px;font-weight:700;color:#fff;background:var(--accent);padding:3px 10px;border-radius:20px}
+  .rule{height:3px;background:var(--accent);border:0;border-radius:3px;margin:14px 0 20px}
+  .context{background:#f7f7fc;border:1px solid #ececf5;border-radius:12px;padding:14px 18px;margin-bottom:18px;font-size:14.5px;line-height:1.55}
+  .context h4{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--accent)}
+  .qbody{font-size:15.5px;line-height:1.6}
+  .qbody p{margin:0 0 12px}
+  .instr{font-weight:700}
+  .note{font-style:italic;color:var(--muted);font-size:14px}
+
+  table.data{border-collapse:collapse;width:100%;margin:10px 0 4px;font-size:14px}
+  table.data th,table.data td{border:1px solid #dadaea;padding:7px 11px;text-align:left}
+  table.data th{background:#f0f0f8;font-weight:700}
+  table.data td.num{text-align:right;font-variant-numeric:tabular-nums}
+
+  /* MC */
+  .opts{display:flex;flex-direction:column;gap:10px;margin:6px 0 4px}
+  .opt{display:flex;gap:12px;align-items:flex-start;border:1.5px solid #e0e0ee;border-radius:11px;padding:12px 15px;cursor:pointer;font-size:15px;line-height:1.45;transition:.12s}
+  .opt:hover{border-color:#c9c9e6;background:#fafaff}
+  .opt .mark{flex:0 0 20px;width:20px;height:20px;border-radius:50%;border:2px solid #c2c2da;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff}
+  .opt.sel{border-color:var(--blue);background:#eef3fb}
+  .opt.sel .mark{border-color:var(--blue);background:var(--blue)}
+  .opt.right{border-color:var(--good);background:#eef7ec}
+  .opt.right .mark{border-color:var(--good);background:var(--good)}
+  .opt.rightmid{border-color:#e0a32e;background:#fdf6e6}
+  .opt.rightmid .mark{border-color:#e0a32e;background:#e0a32e}
+  .opt.wrong{border-color:var(--bad);background:#fbeeec}
+  .opt.wrong .mark{border-color:var(--bad);background:var(--bad)}
+
+  /* Journal / answer table */
+  table.jrnl{border-collapse:collapse;width:100%;margin:8px 0 6px;font-size:14.5px}
+  table.jrnl th,table.jrnl td{border:1px solid #e1e1ee;padding:9px 12px;text-align:left;vertical-align:middle}
+  table.jrnl th{font-weight:700}
+  table.jrnl .num{text-align:right}
+  .selacct{appearance:none;background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%23666'/></svg>") no-repeat right 12px center;
+    border:1.5px solid #d3d3e4;border-radius:22px;padding:8px 30px 8px 16px;font-size:14px;color:var(--ink);cursor:pointer;min-width:170px}
+  .amt{width:120px;border:none;border-bottom:2px solid #c9c9dc;background:transparent;text-align:right;font-size:15px;padding:5px 2px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .amt:focus{outline:none;border-bottom-color:var(--accent)}
+  .amt.ok{border-bottom-color:var(--good);color:var(--good)}
+  .amt.no{border-bottom-color:var(--bad);color:var(--bad)}
+  .trash{color:#d05050;cursor:pointer;font-size:18px;border:none;background:none}
+  .addrow{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;border:none;border-radius:22px;padding:9px 18px;font-size:14px;cursor:pointer;margin-top:6px}
+  .addrow:hover{filter:brightness(1.05)}
+
+  /* numeric fields */
+  .nfield{display:flex;align-items:center;gap:10px;margin:10px 0;font-size:15px;flex-wrap:wrap}
+  .nfield label{min-width:230px;color:var(--ink)}
+  .nfield .pre{color:var(--muted)}
+  .ninput{border:none;border-bottom:2px solid #c9c9dc;background:transparent;font-size:16px;padding:5px 4px;width:160px;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+  .ninput:focus{outline:none;border-bottom-color:var(--accent)}
+  .ninput.ok{border-bottom-color:var(--good);color:var(--good)}
+  .ninput.no{border-bottom-color:var(--bad);color:var(--bad)}
+  .ftick{font-size:16px;width:18px}
+  .ftick.ok{color:var(--good)} .ftick.no{color:var(--bad)}
+
+  /* buttons */
+  .actions{display:flex;align-items:center;gap:12px;margin-top:24px;flex-wrap:wrap}
+  .btn{border-radius:24px;padding:11px 22px;font-size:15px;cursor:pointer;border:2px solid transparent;display:inline-flex;align-items:center;gap:8px;font-weight:600}
+  .btn.check{background:var(--navy);color:#fff}
+  .btn.check:hover{filter:brightness(1.08)}
+  .btn.ghost{background:#fff;color:var(--accent);border-color:var(--accent)}
+  .btn.ghost:hover{background:#fdeef4}
+  .spacer{margin-left:auto}
+  .feedback{margin-top:16px;font-size:15px;font-weight:600;display:none}
+  .feedback.show{display:block}
+  .feedback.good{color:var(--good)}
+  .feedback.bad{color:var(--bad)}
+  .toast{display:none;align-items:center;gap:8px;background:#e7f3d8;border:1px solid #cfe6a4;color:var(--greenInk);
+    border-radius:10px;padding:9px 14px;font-size:14px;margin-bottom:14px}
+  .toast.show{display:flex}
+
+  /* solution panel */
+  .solution{display:none;margin-top:20px;background:var(--green);border-radius:14px;padding:20px 22px;font-size:14.5px;line-height:1.6;color:var(--greenInk)}
+  .solution.show{display:block}
+  .solution h4{margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+  .solution table{border-collapse:collapse;width:100%;margin:6px 0 12px;background:rgba(255,255,255,.35);font-size:14px}
+  .solution table th,.solution table td{border:1px solid rgba(0,0,0,.12);padding:7px 11px}
+  .solution table th{background:var(--greenHead);text-align:left}
+  .solution .num{text-align:right;font-variant-numeric:tabular-nums}
+  .solution .je{margin:4px 0;display:grid;grid-template-columns:30px 1fr 120px;gap:6px;align-items:start}
+  .solution .je .acc{font-weight:600}
+  .solution .je.indent{padding-left:26px}
+  .solution .amt2{text-align:right;font-variant-numeric:tabular-nums}
+  .solution .ex{color:#4f6033;font-size:13px;font-style:italic;margin:2px 0 10px 0}
+  .solution .warn{background:#fff4d6;border:1px solid #e8d28a;color:#7a5b12;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-style:normal}
+
+  /* nav prev/next */
+  .pager{display:flex;justify-content:space-between;margin:22px 4px 0}
+  .pager button{background:#fff;border:1px solid #d8d8ea;border-radius:22px;padding:9px 18px;cursor:pointer;font-size:14px;color:var(--navy)}
+  .pager button:hover{background:#f1f1fb}
+  .pager button:disabled{opacity:.4;cursor:default}
+
+  /* calculator modal */
+  #calcModal{position:fixed;inset:0;background:rgba(40,40,70,.35);display:none;align-items:center;justify-content:center;z-index:50}
+  #calcModal.show{display:flex}
+  .calc{background:#fff;border-radius:16px;padding:16px;width:260px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  .calc .disp{background:#f3f3fa;border-radius:10px;padding:12px 14px;text-align:right;font-size:22px;min-height:30px;margin-bottom:10px;font-variant-numeric:tabular-nums;overflow:hidden}
+  .calc .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .calc button{border:none;border-radius:10px;padding:13px 0;font-size:16px;cursor:pointer;background:#eee;color:#333}
+  .calc button:hover{filter:brightness(.96)}
+  .calc button.op{background:#e7e2f3;color:var(--navy)}
+  .calc button.eq{background:var(--navy);color:#fff}
+  .calc button.fn{background:#f3dde7;color:var(--accent)}
+  .calc .close{margin-top:10px;width:100%;background:#fff;border:1px solid #ddd;border-radius:10px;padding:8px;cursor:pointer}
+
+  @media(max-width:820px){
+    body{flex-direction:column}
+    #sidebar{width:100%;height:auto;flex:none;max-height:230px}
+    #main{height:auto;padding:18px 10px 60px}
+    .card{padding:20px 16px 24px}
+  }
+  /* mode + timer + handin */
+  .modepanel{display:flex;gap:6px;margin:2px 4px 8px}
+  .modebtn{flex:1;border:1.5px solid #d8d8ea;background:#fff;border-radius:10px;padding:8px 4px;font-size:13px;cursor:pointer;color:var(--ink)}
+  .modebtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .modehint{font-size:11.5px;color:var(--muted);margin:0 6px 12px}
+  .timerbox{background:#fff;border:1px solid #e0e0ee;border-radius:12px;padding:10px;margin:0 4px 14px;text-align:center}
+  .timer{font-size:27px;font-variant-numeric:tabular-nums;font-weight:800;color:var(--navy);letter-spacing:1px}
+  .timer.up{color:var(--bad)}
+  .timeup{font-size:11px;color:var(--bad);margin-top:3px}
+  .trow{display:flex;gap:5px;margin-top:9px}
+  .tbtn{flex:1;border:1px solid #ddd;background:#f6f6fc;border-radius:8px;padding:6px 3px;font-size:11px;cursor:pointer;color:var(--ink)}
+  .tbtn.wide{width:100%}
+  .tbtn:hover{background:#ececf8}
+  .handin{display:block;width:calc(100% - 8px);margin:0 4px 14px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer}
+  .handin:hover{filter:brightness(1.06)}
+  .gradebig{font-size:34px;font-weight:800;color:var(--accent);line-height:1}
+  .gradebig span{font-size:15px;color:var(--muted);font-weight:600}
+  .gradesub{font-size:12px;color:var(--muted);margin:4px 0 8px}
+  .reviewbtn{margin-top:9px;width:100%;background:#fff;border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:7px;font-size:12px;cursor:pointer}
+  .reviewbtn:hover{background:#fdeef4}
+  .d.partial{background:#e3b341;box-shadow:0 0 0 1px #e3b341}
+  .d.answered{background:#9aa6e0;box-shadow:0 0 0 1px #9aa6e0}
+  .dot.partial{background:#e3b341}
+  .dot.answered{background:#9aa6e0}
+  .feedback.mid{color:#9a7d1e}
+  .exnote{font-size:13px;color:var(--muted)}
+  /* results modal */
+  #resultsModal{position:fixed;inset:0;background:rgba(40,40,70,.45);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
+  #resultsModal.show{display:flex}
+  .results{background:#fff;border-radius:18px;padding:26px 30px;max-width:640px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+  .results h2{margin:0 0 4px;text-align:center;color:var(--navy);font-size:18px}
+  .gradehero{font-size:58px;font-weight:800;color:var(--accent);text-align:center;line-height:1.05}
+  .gradehero span{font-size:20px;color:var(--muted);font-weight:600}
+  .hero2{text-align:center;font-size:16px;font-weight:700;color:var(--ink)}
+  .hero3{text-align:center;font-size:12.5px;color:var(--ink);margin:8px 0 16px}
+  .hero3 .muted{color:var(--muted)}
+  .restable{width:100%;border-collapse:collapse;font-size:13px}
+  .restable th,.restable td{border:1px solid #e6e6f0;padding:5px 9px}
+  .restable th{background:#f0f0f8;text-align:left}
+  .restable td.ic{text-align:center;font-weight:700}
+  .restable td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .restable tr.correct{background:#eef7ec}
+  .restable tr.wrong{background:#fbeeec}
+  .restable tr.partial{background:#fcf6e3}
+  .restable tr.blank{background:#f5f5f8}
+  .bonustag{font-size:10px;background:#e7e2f3;color:var(--navy);padding:1px 6px;border-radius:8px}
+  .resbtns{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+  <aside id="sidebar">
+    <h1>FA / MA — Practice Exam</h1>
+    <div class="sub">9 questions · timed 2:00:00</div>
+    <div class="modepanel">
+      <button class="modebtn" id="modeSowiso" onclick="setMode('sowiso')">SOWISO</button>
+      <button class="modebtn" id="modeExam" onclick="setMode('exam')">Exam</button>
+    </div>
+    <div class="modehint" id="modeHint"></div>
+    <div class="timerbox" id="timerbox"></div>
+    <div class="score" id="scorePanel"></div>
+    <nav id="nav"></nav>
+    <button class="handin" id="handinBtn" onclick="handIn()">Hand in &amp; see score</button>
+    <button class="resetbtn" onclick="resetAll()">Reset everything (new attempt)</button>
+  </aside>
+
+  <main id="main">
+    <div class="stage">
+      <div class="progressdots" id="dots"></div>
+      <div class="toast" id="toast">✔ <span id="toastTxt">You already master this exercise</span></div>
+      <div class="card" id="card"></div>
+      <div class="pager">
+        <button id="prevBtn" onclick="go(-1)">‹ Previous</button>
+        <button id="nextBtn" onclick="go(1)">Next ›</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="calcModal" onclick="if(event.target.id==='calcModal')toggleCalc(false)">
+    <div class="calc">
+      <div class="disp" id="calcDisp">0</div>
+      <div class="grid">
+        <button class="fn" onclick="calcClear()">C</button>
+        <button class="fn" onclick="calcDel()">⌫</button>
+        <button class="op" onclick="calcIn('(')">(</button>
+        <button class="op" onclick="calcIn(')')">)</button>
+        <button onclick="calcIn('7')">7</button><button onclick="calcIn('8')">8</button><button onclick="calcIn('9')">9</button><button class="op" onclick="calcIn('/')">÷</button>
+        <button onclick="calcIn('4')">4</button><button onclick="calcIn('5')">5</button><button onclick="calcIn('6')">6</button><button class="op" onclick="calcIn('*')">×</button>
+        <button onclick="calcIn('1')">1</button><button onclick="calcIn('2')">2</button><button onclick="calcIn('3')">3</button><button class="op" onclick="calcIn('-')">−</button>
+        <button onclick="calcIn('0')">0</button><button onclick="calcIn('.')">.</button><button class="eq" onclick="calcEq()">=</button><button class="op" onclick="calcIn('+')">+</button>
+      </div>
+      <button class="close" onclick="toggleCalc(false)">Close</button>
+    </div>
+  </div>
+
+  <div id="resultsModal" onclick="if(event.target.id==='resultsModal')closeResults()">
+    <div class="results" id="resultsInner"></div>
+  </div>
+
+<script>
+/* ===================== SHARED CONTEXTS ===================== */
+const CTX_EQUITY = `<h4>Case — Pasta Mamma (FA Equity)</h4>
+<p>The equity section of Pasta Mamma&rsquo;s balance sheet on <b>1 January 2022</b> is as follows:</p>
+<table class="data"><tr><th>Item</th><th class="num">Amount</th></tr>
+<tr><td>Share capital &ndash; ordinary (nominal value &euro;5 per share)</td><td class="num">&euro;1,950,000</td></tr>
+<tr><td>Share premium &ndash; ordinary</td><td class="num">&euro;7,020,000</td></tr>
+<tr><td>Treasury (ordinary) shares &ndash; repurchase price &euro;22</td><td class="num">&euro;1,980,000</td></tr>
+<tr><td>Share premium &ndash; treasury shares</td><td class="num">&euro;20,000</td></tr>
+<tr><td>Share capital &ndash; 13% cumulative preference (nominal &euro;30/share)</td><td class="num">&euro;1,500,000</td></tr>
+<tr><td>Share premium &ndash; 13% cumulative preference</td><td class="num">&euro;3,700,000</td></tr>
+<tr><td>Retained earnings</td><td class="num">&euro;4,280,000</td></tr></table>
+<p style="margin-top:10px">Transactions in 2022:</p>
+<p>&bull; <b>May 31</b>: issues 27,000 repurchased ordinary shares for &euro;756,000.<br>
+&bull; <b>June 30</b>: issues 19,000 repurchased ordinary shares for &euro;190,000.<br>
+&bull; <b>Dec 20</b>: announces a cash dividend of &euro;291,000 to all shareholders.<br>
+&bull; Net income for 2022 is &euro;1,231,000.</p>
+<p>Pasta Mamma uses the <b>cost method</b> for treasury shares.</p>`;
+
+const CTX_ODIN = `<h4>Case — Odin NV (Weighted average shares)</h4>
+<p>On January 1, 2022, Odin NV has <b>2,000,000</b> ordinary shares outstanding. During the year:</p>
+<p>&bull; <b>May 1</b>: ordinary share issue of 200,000 shares<br>
+&bull; <b>July 1</b>: announcement of a 20% stock dividend<br>
+&bull; <b>November 1</b>: exercise of 50,000 options, each converted to one ordinary share.</p>`;
+
+const CTX_WORLD = `<h4>Case — World Inc. (questions d&ndash;e)</h4>
+<p>Weighted average ordinary shares for 2023 = <b>3,000,000</b>. Net income = <b>EUR 15,000,000</b>. Tax rate = <b>22%</b>.</p>
+<p>&bull; <b>5% non-cumulative convertible preference shares</b>, total par EUR 500,000 (issued 2022). Conversion &rarr; +20,000 ordinary shares. <b>No dividends announced in 2023.</b><br>
+&bull; <b>5% convertible bonds</b> issued Jan 1, 2023, pre-tax interest expense EUR 20,000. Conversion &rarr; +30,000 ordinary shares. Total proceeds EUR 400,000. Market rate Jan 1, 2023 = <b>7%</b>. Interest paid at year-end. Redeemed in full Jan 1, 2025.<br>
+&bull; <b>15,000 warrants</b>, exercise price EUR 25, &rarr; 1 ordinary share each. Average 2023 share price = <b>EUR 15</b>.</p>`;
+
+const CTX_GREEN = `<h4>Case — Green Plc (Tax, questions c&ndash;i)</h4>
+<p>Machine acquired Jan 1, 2022, costing <b>&euro;80,000</b>, 4-year life, zero residual. Depreciation:</p>
+<table class="data"><tr><th>Year</th><th>Financial</th><th>Tax</th></tr>
+<tr><td>2022</td><td>25%</td><td>35%</td></tr><tr><td>2023</td><td>25%</td><td>45%</td></tr>
+<tr><td>2024</td><td>25%</td><td>15%</td></tr><tr><td>2025</td><td>25%</td><td>5%</td></tr></table>
+<p>Two other book-tax differences at end of 2022 that will reverse and<br>
+(i) cause <b>taxable</b> amounts of &euro;10,000 (2023), &euro;5,000 (2024), &euro;20,000 (2025);<br>
+(ii) cause <b>deductible</b> amounts of &euro;4,000 (2023), &euro;18,000 (2024), &euro;12,000 (2025).</p>
+<p>No deferred taxes at the beginning of 2022. Financial income before depreciation and income taxes = <b>&euro;120,000</b> in 2022. Enacted tax rate: <b>40%</b> (2022 &amp; 2023), <b>30%</b> (2024 onwards).</p>`;
+
+const CTX_WINDSOR = `<h4>Case — Windsor Windows (Revenue recognition, c&ndash;f)</h4>
+<p>Windsor sells custom storm windows and also installs them; installation can be done by other vendors. Contract on Nov 1, 2018 with a homeowner: customer buys windows for <b>&pound;4,700</b> and chooses Windsor to install. Windsor charges the same window price whether or not it installs. Installation fair value (standalone) = <b>&pound;1,200</b>. The customer pays <b>&pound;4,000</b> (= standalone fair value of the windows, cost &pound;2,300) on delivery and the balance on installation.</p>
+<p>Windows delivered <b>Dec 1, 2018</b>; installation completed <b>Jan 15, 2019</b>, when the customer pays the balance.</p>`;
+
+const CTX_MAINT = `<h4>Case — High-low method</h4>
+<table class="data"><tr><th>Month</th><th class="num">Maintenance cost, $</th><th class="num">Machine hours</th></tr>
+<tr><td>1</td><td class="num">32,000</td><td class="num">7,000</td></tr>
+<tr><td>2</td><td class="num">50,000</td><td class="num">13,000</td></tr>
+<tr><td>3</td><td class="num">131,000</td><td class="num">40,000</td></tr>
+<tr><td>4</td><td class="num">104,000</td><td class="num">31,000</td></tr></table>`;
+
+const CTX_ORLEAL = `<h4>Case — Orl&eacute;al Ltd (Inspection of accounts)</h4>
+<table class="data"><tr><th>Item</th><th class="num">Amount</th></tr>
+<tr><td>Direct material</td><td class="num">&euro;158,000</td></tr>
+<tr><td>Direct labour</td><td class="num">&euro;120,000</td></tr>
+<tr><td>Electricity (80% variable)</td><td class="num">&euro;80,000</td></tr>
+<tr><td>Maintenance (20% variable)</td><td class="num">&euro;90,000</td></tr>
+<tr><td>Rent (100% fixed)</td><td class="num">&euro;100,000</td></tr></table>
+<p>2022 production = <b>120,000</b> bottles. Next year expected = 180,000 bottles.</p>`;
+
+const CTX_COMFY = `<h4>Case — Comfy Inc. (Constrained resource)</h4>
+<p>Two sofas (leather &amp; cotton) use the assembly and upholstery departments. Assembly hours are unlimited; <b>upholstery is limited to 300 hours/month</b>. Monthly demand: 50 leather, 40 cotton.</p>
+<table class="data"><tr><th></th><th class="num">Leather</th><th class="num">Cotton</th></tr>
+<tr><td>Selling price, $/unit</td><td class="num">1,320</td><td class="num">1,120</td></tr>
+<tr><td>Variable production cost, $/unit</td><td class="num">600</td><td class="num">400</td></tr>
+<tr><td>Minutes in assembly / unit</td><td class="num">150</td><td class="num">150</td></tr>
+<tr><td>Minutes in upholstery / unit</td><td class="num">240</td><td class="num">180</td></tr></table>
+<p>Budgeted fixed production costs $12,000 are allocated on assembly minutes.</p>`;
+
+const CTX_WANDEROUS = `<h4>Case — Wanderous Ltd (Special order)</h4>
+<p>May budget: produce &amp; sell <b>30,000</b> pairs = <b>maximum capacity</b>. Selling price $50; variable production cost $8; fixed production cost $5; variable selling cost $3; fixed selling cost $10 (all per pair).</p>
+<p>A walking club offers a special order of <b>5,000 pairs at $35</b>. No selling costs for the special order; not in the May budget.</p>`;
+
+const CTX_ALPHA = `<h4>Case — Alpha Inc. (Purchases budget)</h4>
+<p>2022 production budget = 1,000 units of product X. One unit needs 10 kg of material A ($8/kg). Beginning inventory of A = 5,000 kg. Ending inventory budgeted at <b>20% of annual budgeted usage</b>.</p>`;
+
+const CTX_EOS = `<h4>Case — Eos Company (Absorption costing)</h4>
+<p>2020 budget: sales 2,000 units; direct material 1 kg/unit at $3/kg; direct labour 2 hrs/unit at $10/hr; variable production overhead <b>$6 per dollar of direct labour cost</b>; fixed production overhead <b>$15 per unit</b>; closing inventory 300 units. Opening inventory 500 units at $160/unit. Absorption costing.</p>`;
+
+const CTX_SKEIRON = `<h4>Case — Skeiron Plc (Fixed overhead variances)</h4>
+<p>For 2023: adverse fixed overhead <b>volume capacity</b> variance $6,000; favourable fixed overhead <b>volume efficiency</b> variance $18,000; <b>under-recovery</b> of fixed overheads $4,000.</p>`;
+
+const CTX_LYNX = `<h4>Case — lynx Ltd (Material variances)</h4>
+<p>2020 budget: direct material usage 3 kg/unit; ending inventory of materials 500 kg; production 10,000 units; beginning inventory 1,000 kg.</p>
+<p>Actual: 20,000 kg used in production; 25,000 kg purchased for $137,500. Direct material <b>usage</b> variance = $24,000. Actual production = 8,000 units.</p>`;
+
+const CTX_TITAN = `<h4>Case — Titan Corporation (Overhead variances, absorption)</h4>
+<table class="data"><tr><th></th><th>Budget (Jan 1)</th><th>Actual (Dec 31)</th></tr>
+<tr><td>Direct materials</td><td>0.8 kg at &euro;2/kg</td><td>&euro;150,000 (50,000 kg)</td></tr>
+<tr><td>Direct labour</td><td>0.5 hrs/unit at &euro;15/hr</td><td>&euro;420,000 (35,000 hrs)</td></tr>
+<tr><td>Variable production overhead</td><td>&euro;11 per DLH</td><td>&euro;455,000</td></tr>
+<tr><td>Fixed production overhead</td><td>&euro;5 per unit</td><td>&euro;350,000</td></tr>
+<tr><td>Ending balance</td><td>5,000 units</td><td>11,000 units</td></tr>
+<tr><td>Sales</td><td>45,000 units</td><td>40,000 units</td></tr></table>
+<p>Opening finished goods = 1,000 units; opening direct materials = 0; no WIP. Absorption costing.</p>`;
+
+/* ===================== EXAM DATA ===================== */
+const EXAM = [
+{ title:"FA — Equity", items:[
+  { id:"1a", pts:1.0, type:"mc", context:CTX_EQUITY,
+    prompt:`<p class="instr">How many outstanding ordinary shares does the company have on January 1, 2022?</p>`,
+    options:["90,000","390,000","50,000","300,000"], answer:3,
+    solution:`<p>Issued ordinary shares = 1,950,000 &divide; &euro;5 = <b>390,000</b>.<br>
+    Treasury shares = 1,980,000 &divide; &euro;22 = <b>90,000</b>.<br>
+    Outstanding = 390,000 &minus; 90,000 = <b>300,000</b>.</p>` },
+
+  { id:"1b", pts:3.0, type:"journal", context:CTX_EQUITY,
+    prompt:`<p class="instr">What is the journal entry for the May 31 transaction?</p><p class="note">[Round to the nearest integer if necessary.]</p>`,
+    accounts:["Cash","Treasury shares","Share premium - treasury shares","Share capital - ordinary","Share premium - ordinary","Retained earnings","Gain on sale of treasury shares","Loss on sale of treasury shares"],
+    rows:[{account:"Cash",debit:756000,credit:0},{account:"Treasury shares",debit:0,credit:594000},{account:"Share premium - treasury shares",debit:0,credit:162000}],
+    solution:`<div class="je"><span>Dr</span><span class="acc">Cash</span><span class="amt2">756,000</span></div>
+    <div class="ex">= cash received on reissue.</div>
+    <div class="je indent"><span>Cr</span><span class="acc">Treasury shares</span><span class="amt2">594,000</span></div>
+    <div class="ex">= 27,000 &times; &euro;22 (cost of the reissued treasury shares).</div>
+    <div class="je indent"><span>Cr</span><span class="acc">Share premium &ndash; treasury shares</span><span class="amt2">162,000</span></div>
+    <div class="ex">= 756,000 &minus; 594,000. Under the cost method, reissuing above cost credits paid-in capital (never income).</div>` },
+
+  { id:"1c", pts:2.0, type:"numeric", context:CTX_EQUITY,
+    prompt:`<p class="instr">How much of the December 20 cash dividend will go to ordinary shareholders?</p>`,
+    fields:[{label:"To ordinary shareholders",pre:"€",value:96000,tol:1}],
+    solution:`<p>Preference dividend = 13% &times; &euro;1,500,000 = <b>&euro;195,000</b> (paid first; cumulative, no arrears given).<br>
+    Ordinary = 291,000 &minus; 195,000 = <b>&euro;96,000</b>.</p>` },
+
+  { id:"1d", pts:4.0, type:"numeric", context:CTX_EQUITY,
+    prompt:`<p class="instr">What is the ending balance of retained earnings on December 31, 2022 (including net income for the year)?</p>`,
+    fields:[{label:"Retained earnings 31 Dec 2022",pre:"€",value:5174000,tol:1}],
+    solution:`<p>Start with the June 30 reissue (below cost): cost = 19,000 &times; &euro;22 = 418,000; cash = 190,000; deficiency = <b>228,000</b>.<br>
+    Absorb against Share premium &ndash; treasury (20,000 opening + 162,000 from May 31 = 182,000); the remaining <b>46,000</b> is charged to Retained earnings.</p>
+    <table><tr><th>Retained earnings</th><th class="num">&euro;</th></tr>
+    <tr><td>Opening</td><td class="num">4,280,000</td></tr>
+    <tr><td>+ Net income</td><td class="num">1,231,000</td></tr>
+    <tr><td>&minus; Cash dividend</td><td class="num">(291,000)</td></tr>
+    <tr><td>&minus; Treasury deficiency</td><td class="num">(46,000)</td></tr>
+    <tr><td><b>Ending</b></td><td class="num"><b>5,174,000</b></td></tr></table>` },
+]},
+
+{ title:"FA — Dilutive Securities / EPS", items:[
+  { id:"2a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Which statement is correct?</p>`,
+    options:[
+      "The value of the debt component of a convertible bond is found by deducting the nominal value of the conversion option from total proceeds (with-and-without method).",
+      "When preference shares are repurchased for more than their issue price, the difference is recognized as a loss in the income statement.",
+      "When convertible bonds are settled before maturity, the issuer books a gain when the fair value of the debt component is higher than its book value.",
+      "Convertible bonds give the issuer the benefit of a lower interest rate than an otherwise similar non-convertible bond."],
+    answer:3,
+    solution:`<p><b>Last option is correct.</b> The conversion option lets the issuer pay a lower coupon than a plain bond.</p>
+    <p>Why the others fail: (1) the <i>debt</i> component is measured directly (PV at market rate); equity is the residual. (2) The excess is charged to equity (share premium / retained earnings), not the income statement. (3) Fair value &gt; book value of debt gives a <i>loss</i>, not a gain.</p>` },
+
+  { id:"2b", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Which statement is correct?</p><p class="note">(Assume conversion/exercise increases ordinary shares outstanding.)</p>`,
+    options:[
+      "Conversion of convertible preference shares will always increase Return-On-Equity for the year.",
+      "When there is a loss per share (negative EPS), exercising warrants has an anti-dilutive effect.",
+      "Conversion of convertible bonds will always increase total assets for the year.",
+      "Repurchasing a convertible bond at maturity decreases profit per share for the year."],
+    answer:1,
+    solution:`<p><b>Second option is correct.</b> With a net loss, adding shares makes the loss-per-share <i>smaller</i> (less negative) &rarr; anti-dilutive. In fact, all potential ordinary shares are anti-dilutive when there is a net loss. The others are not always true / are false.</p>` },
+
+  { id:"2c", pts:6.5, type:"numeric", context:CTX_ODIN,
+    prompt:`<p class="instr">Calculate the weighted average number of ordinary shares in 2022.</p><p class="note">[Round to a whole number if necessary.]</p>`,
+    layout:"table", tableHead:["Period","Weighted shares"],
+    fields:[
+      {label:"Jan 1 – Apr 30",value:800000,tol:2},
+      {label:"May 1 – Jun 30",value:440000,tol:2},
+      {label:"Jul 1 – Oct 31",value:880000,tol:2},
+      {label:"Nov 1 – Dec 31",value:448333,tol:3},
+      {label:"WEIGHTED AVERAGE (2022)",value:2568333,tol:5,bold:true}],
+    solution:`<p>The 20% stock dividend (July 1) is applied <b>retroactively</b> to shares outstanding before it (&times;1.2).</p>
+    <table><tr><th>Period</th><th>Shares</th><th>Restatement</th><th class="num">Weighted</th></tr>
+    <tr><td>Jan 1 &ndash; Apr 30 (4 mo)</td><td>2,000,000</td><td>&times;1.2</td><td class="num">800,000</td></tr>
+    <tr><td>May 1 &ndash; Jun 30 (2 mo)</td><td>2,200,000</td><td>&times;1.2</td><td class="num">440,000</td></tr>
+    <tr><td>Jul 1 &ndash; Oct 31 (4 mo)</td><td>2,640,000</td><td>N/A</td><td class="num">880,000</td></tr>
+    <tr><td>Nov 1 &ndash; Dec 31 (2 mo)</td><td>2,690,000</td><td>N/A</td><td class="num">448,333</td></tr>
+    <tr><td colspan="3"><b>Weighted average</b></td><td class="num"><b>2,568,333</b></td></tr></table>
+    <p>e.g. 2,000,000 &times;1.2 &times; 4/12 = 800,000; (2,200,000&times;1.2)&times;2/12 = 440,000; 2,640,000&times;4/12 = 880,000; 2,690,000&times;2/12 = 448,333.</p>` },
+
+  { id:"2d", pts:3.0, type:"numeric", context:CTX_WORLD,
+    prompt:`<p class="instr">Calculate the value of the conversion option (equity component) of the convertible bonds.</p>`,
+    fields:[{label:"Equity component",pre:"EUR",value:14464,tol:8}],
+    solution:`<p>Measure the debt component as the PV of cash flows at the <b>market rate (7%)</b>. Coupon = 5% &times; 400,000 = 20,000/yr; principal 400,000 repaid Jan 1, 2025 (2 years).</p>
+    <table><tr><th>Cash flow</th><th class="num">Amount</th><th class="num">PV @7%</th></tr>
+    <tr><td>Interest, end 2023</td><td class="num">20,000</td><td class="num">18,692</td></tr>
+    <tr><td>Interest + principal, end 2024</td><td class="num">420,000</td><td class="num">366,844</td></tr>
+    <tr><td><b>Debt component</b></td><td></td><td class="num"><b>385,536</b></td></tr></table>
+    <p>Equity component = 400,000 &minus; 385,536 = <b>&asymp; EUR 14,464</b>.</p>` },
+
+  { id:"2e", pts:6.5, type:"numeric", context:CTX_WORLD,
+    prompt:`<p class="instr">Calculate basic and diluted EPS, and indicate the incremental effects of the convertible preference shares and warrants.</p>`,
+    fields:[
+      {label:"Basic EPS",pre:"EUR",value:5.00,tol:0.02},
+      {label:"Diluted EPS",pre:"EUR",value:4.92,tol:0.04}],
+    solution:`<p><b>Basic EPS</b> = 15,000,000 &divide; 3,000,000 = <b>EUR 5.00</b> (no preference dividend deducted &ndash; non-cumulative, none declared).</p>
+    <p><b>Incremental effects</b></p>
+    <p>&bull; Convertible preference: 0 &divide; 20,000 = <b>0.00</b> (no preference dividends) &rarr; dilutive.<br>
+    &bull; Warrants: <b>anti-dilutive</b> &ndash; not exercised, exercise price (25) &gt; average share price (15).<br>
+    &bull; Convertible bonds: 20,000 &times; (1 &minus; 0.22) &divide; 30,000 = 15,600 &divide; 30,000 = <b>0.52</b>.</p>
+    <p><b>Diluted EPS</b> (add the dilutive securities one by one):</p>
+    <p>1. After preference: (15,000,000 + 0) &divide; (3,000,000 + 20,000) = <b>4.97</b><br>
+    2. After bonds: (15,000,000 + 15,600) &divide; (3,020,000 + 30,000) = 15,015,600 &divide; 3,050,000 = <b>EUR 4.92</b></p>
+    <p>The bond add-back is the after-tax interest: 20,000 &times; (1 &minus; 0.22) = 15,600.</p>` },
+]},
+
+{ title:"FA — Tax", items:[
+  { id:"3a", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Paying less taxes now than you owe based on financial (book) income leads to&hellip;</p>`,
+    options:["&hellip; a deferred tax asset","&hellip; a loss carryforward","&hellip; a deferred tax liability","&hellip; a loss carryback"],
+    answer:2,
+    solution:`<p>Less tax paid now than book income implies tax is deferred to later periods &rarr; <b>deferred tax liability</b>.</p>` },
+
+  { id:"3b", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Which of the following statements is correct?</p>`,
+    options:[
+      "Reduce a loss carryback if it is probable some/all will not be realized.",
+      "Reduce a deferred tax liability if it is probable some/all will not be realized.",
+      "Reduce the deferred tax effect of a permanent difference if it is probable some/all will not be realized.",
+      "Reduce a deferred tax asset if it is probable some/all of it will not be realized."],
+    answer:3,
+    solution:`<p><b>Last option.</b> Only deferred tax <i>assets</i> are written down (valuation allowance) when realization is not probable. Permanent differences create no deferred tax at all.</p>` },
+
+  { id:"3c", pts:1.0, type:"numeric", context:CTX_GREEN,
+    prompt:`<p class="instr">What is financial income before tax for 2022?</p>`,
+    fields:[{label:"Financial income before tax",pre:"€",value:100000,tol:1}],
+    solution:`<p>120,000 &minus; financial depreciation (25% &times; 80,000 = 20,000) = <b>&euro;100,000</b>.</p>` },
+
+  { id:"3d", pts:3.0, type:"numeric", context:CTX_GREEN,
+    prompt:`<p class="instr">What is the taxable income for 2022?</p>`,
+    fields:[{label:"Taxable income 2022",pre:"€",value:91000,tol:1}],
+    solution:`<table><tr><th></th><th class="num">&euro;</th></tr>
+    <tr><td>Financial income before tax</td><td class="num">100,000</td></tr>
+    <tr><td>Extra tax depreciation (28,000 &minus; 20,000)</td><td class="num">(8,000)</td></tr>
+    <tr><td>Originating taxable differences (i) deferred to future</td><td class="num">(35,000)</td></tr>
+    <tr><td>Originating deductible differences (ii) not yet deductible</td><td class="num">34,000</td></tr>
+    <tr><td><b>Taxable income</b></td><td class="num"><b>91,000</b></td></tr></table>
+    <p>Tax depreciation 2022 = 35% &times; 80,000 = 28,000.</p>` },
+
+  { id:"3e", pts:1.0, type:"numeric", context:CTX_GREEN,
+    prompt:`<p class="instr">Compute the current portion of income tax expense for 2022.</p>`,
+    fields:[{label:"Current tax expense",pre:"€",value:36400,tol:1}],
+    solution:`<p>Taxable income &times; 2022 rate = 91,000 &times; 40% = <b>&euro;36,400</b>.</p>` },
+
+  { id:"3f", pts:3.0, type:"numeric", context:CTX_GREEN,
+    prompt:`<p class="instr">Compute the total change (ending &minus; opening) of the deferred tax liability (DTL) for 2022.</p>`,
+    fields:[{label:"Change in DTL",pre:"€",value:12300,tol:1}],
+    solution:`<p>Increase in DTL = [book-tax difference (i)] + [depreciation], each future reversal &times; that year&rsquo;s enacted rate:</p>
+    <p><b>Difference (i):</b> 10,000&times;40% + 25,000&times;30% = 4,000 + 7,500 = <b>11,500</b><br>
+    (the 25,000 = 5,000 in 2024 + 20,000 in 2025, both at 30%).</p>
+    <p><b>Depreciation:</b> &minus;16,000&times;40% + 8,000&times;30% + 16,000&times;30% = &minus;6,400 + 2,400 + 4,800 = <b>800</b><br>
+    (in 2023 tax depreciation exceeds book by a further 16,000 at 40%; in 2024 and 2025 the difference reverses as book exceeds tax by 8,000 and 16,000 at 30%).</p>
+    <p><b>Change in DTL = 11,500 + 800 = €12,300</b> (opening balance was 0).</p>` },
+
+  { id:"3g", pts:2.0, type:"numeric", context:CTX_GREEN,
+    prompt:`<p class="instr">Compute the total change (ending &minus; opening) of the deferred tax asset (DTA) for 2022.</p>`,
+    fields:[{label:"Change in DTA",pre:"€",value:10600,tol:1}],
+    solution:`<p>Increase in DTA = deductible amounts (ii) &times; the rate of the year they reverse:</p>
+    <table><tr><th>Deductible diff (ii)</th><th class="num">Amount</th><th class="num">Rate</th><th class="num">DTA</th></tr>
+    <tr><td>2023</td><td class="num">4,000</td><td class="num">40%</td><td class="num">1,600</td></tr>
+    <tr><td>2024</td><td class="num">18,000</td><td class="num">30%</td><td class="num">5,400</td></tr>
+    <tr><td>2025</td><td class="num">12,000</td><td class="num">30%</td><td class="num">3,600</td></tr>
+    <tr><td><b>Change in DTA</b> (opening 0)</td><td></td><td></td><td class="num"><b>10,600</b></td></tr></table>
+    <p>Equivalently: 4,000&times;40% + 30,000&times;30% = 1,600 + 9,000 = <b>€10,600</b>.</p>` },
+
+  { id:"3h", pts:1.0, type:"mc", context:CTX_GREEN,
+    prompt:`<p class="instr">Compute the income tax expense with your answers under e, f, and g.</p>`,
+    options:["e+f+g","e&minus;f&minus;g","e+f&minus;g","e&minus;f+g"], answer:2,
+    solution:`<p>Income tax expense = current tax + &Delta;DTL &minus; &Delta;DTA = <b>e + f &minus; g</b> = 36,400 + 13,900 &minus; 10,600 = &euro;39,700.</p>` },
+
+  { id:"3i", pts:2.0, type:"mc", context:CTX_GREEN,
+    prompt:`<p class="instr">What is the change in DTA and DTL in 2023?</p>`,
+    options:[
+      "DTA: 1,600 credit. DTL: 2,400 credit.",
+      "DTA: 2,400 credit. DTL: 1,600 credit.",
+      "DTA: 2,400 debit. DTL: 1,600 credit.",
+      "DTA: 1,600 credit. DTL: 2,400 debit."],
+    answer:0,
+    solution:`<p>Compare the closing balances:</p>
+    <p><b>DTL:</b> 12,300 (end 2022) &rarr; 14,700 (end 2023) = <b>+2,400 credit</b>.<br>
+    DTL 2023 = 25,000&times;30% (diff i remaining) + (8,000+16,000)&times;30% (depreciation) = 7,500 + 7,200 = 14,700.</p>
+    <p><b>DTA:</b> 10,600 (end 2022) &rarr; 9,000 (end 2023) = <b>&minus;1,600 (credit / decrease)</b>.<br>
+    DTA 2023 = 30,000&times;30% = 9,000.</p>
+    <p>So: <b>DTA 1,600 credit, DTL 2,400 credit</b> (first option).</p>` },
+]},
+
+{ title:"FA — Revenue Recognition", items:[
+  { id:"4a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Under IFRS 15, which balance sheet position is a contract liability?</p>`,
+    options:["Pension obligations","Notes payable","Accounts receivables","Unearned sales revenue"], answer:3,
+    solution:`<p><b>Unearned (deferred) sales revenue</b> &ndash; cash received before the performance obligation is satisfied.</p>` },
+
+  { id:"4b", pts:2.0, type:"mc",
+    prompt:`<p class="instr">In the context of consignments, which statement is <u>incorrect</u>?</p>`,
+    options:[
+      "The agent does not record the consigned merchandise as inventory in her books.",
+      "The agent recognizes commission revenue at the point of sale when the customer obtains control.",
+      "The agent's performance obligation is to arrange the sale between the principal and the customers.",
+      "Upon sale, the agent has a liability for the net amount due to the principal."],
+    answer:1,
+    solution:`<p>The <b>incorrect</b> statement is the second one: &ldquo;the agent recognizes commission revenue at the point of sale when the customer obtains control of the consigned merchandise.&rdquo;</p>
+    <p>The agent (consignee) recognises its commission when it satisfies <i>its own</i> performance obligation &ndash; arranging the sale. &ldquo;The customer obtains control of the merchandise&rdquo; is the <b>principal&rsquo;s</b> revenue trigger for the goods, not the agent&rsquo;s; the agent never controls or transfers the goods. The other three statements are all true.</p>` },
+
+  { id:"4c", pts:1.0, type:"numeric", context:CTX_WINDSOR,
+    prompt:`<p class="instr">How many separate performance obligations are in the contract?</p>`,
+    fields:[{label:"Performance obligations",value:2,tol:0}],
+    solution:`<p><b>2</b> &ndash; the windows and the installation service (installation is distinct; others can perform it).</p>` },
+
+  { id:"4d", pts:2.0, type:"numeric", context:CTX_WINDSOR,
+    prompt:`<p class="instr">Compute the amount of revenue allocated to the installation service.</p>`,
+    fields:[{label:"Installation revenue",pre:"£",value:1085,tol:3}],
+    solution:`<p>Allocate the &pound;4,700 transaction price on relative standalone values (windows 4,000 + installation 1,200 = 5,200):<br>
+    Installation = 4,700 &times; 1,200/5,200 = <b>&pound;1,085</b> (1,084.6).</p>` },
+
+  { id:"4e", pts:2.0, type:"numeric", context:CTX_WINDSOR,
+    prompt:`<p class="instr">How much revenue is recognized at the end of 2018 on this entire transaction? (Round to nearest integer.)</p>`,
+    fields:[{label:"Revenue recognized in 2018",pre:"£",value:3615,tol:3}],
+    solution:`<p>Only the windows are delivered in 2018 (Dec 1). Windows revenue = 4,700 &times; 4,000/5,200 = <b>&pound;3,615</b>. Installation (&pound;1,085) is recognized in 2019.</p>` },
+
+  { id:"4f", pts:3.0, type:"journal", context:CTX_WINDSOR,
+    prompt:`<p class="instr">Provide the journal entry for January 15, 2019.</p><p class="note">[Round to nearest integer.]</p>`,
+    accounts:["Cash","Accounts receivable","Unearned service revenue","Service revenue","Sales revenue","Cost of goods sold","Inventory"],
+    rows:[{account:"Cash",debit:700,credit:0},{account:"Unearned service revenue",debit:385,credit:0},{account:"Service revenue",debit:0,credit:1085}],
+    solution:`<div class="je"><span>Dr</span><span class="acc">Cash</span><span class="amt2">700</span></div>
+    <div class="ex">balance due = 4,700 &minus; 4,000 paid on delivery.</div>
+    <div class="je"><span>Dr</span><span class="acc">Unearned service revenue</span><span class="amt2">385</span></div>
+    <div class="ex">installation portion received on delivery (4,000 &minus; 3,615 windows) is now earned.</div>
+    <div class="je indent"><span>Cr</span><span class="acc">Service revenue</span><span class="amt2">1,085</span></div>
+    <div class="ex">installation performance obligation satisfied (700 + 385).</div>` },
+]},
+
+{ title:"FA — Football Club (Rev. Rec.)", items:[
+  { id:"5a", pts:1.0, type:"mc",
+    prompt:`<p class="instr">In the final FA on-campus lecture on revenue recognition, which football club was discussed for a revenue-recognition error?</p>`,
+    options:["AC Milan","Wrexham AFC","FC Twente","Feyenoord"], answer:2,
+    solution:`<p>The club discussed was <b>FC Twente</b>. (Confirmed against the answer key.)</p>` },
+
+  { id:"5b", pts:1.0, type:"mc",
+    prompt:`<p class="instr">What mistake did the club make in recognizing revenue?</p>`,
+    options:[
+      "Overestimated TV-licence income by 150%.",
+      "Wrongly attributed the total transaction price to multiple performance obligations.",
+      "Booked revenue before the accompanying performance obligation was satisfied.",
+      "Did not have a valid contract for the TV-licence income."],
+    answer:2,
+    solution:`<p>FC Twente <b>booked revenue before the accompanying performance obligation was satisfied</b>.</p>
+    <p style="font-size:13px">(This bonus item&rsquo;s individual grade wasn&rsquo;t in the shared key, but it follows from 5a and the IFRS&nbsp;15 principle.)</p>` },
+]},
+
+{ title:"MA — Cost Estimation (Ch 24)", items:[
+  { id:"6a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">The criteria used to classify mixed costs into fixed and variable components include:</p>`,
+    options:["Relevant range","Time horizon","Cost object","All of the above."], answer:3,
+    solution:`<p><b>All of the above</b> &ndash; cost behaviour depends on the cost object, the time horizon and the relevant range.</p>` },
+
+  { id:"6b", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Which statement(s) about cost functions is(are) TRUE?<br>
+    <span class="note">S1: total cost changes are explained by changes in one (or few) activities. S2: cost behaviour can be approximated by a linear function within the relevant range.</span></p>`,
+    options:["Statement 2 is true; statement 1 is false.","Both statements are false.","Both statements are true.","Statement 1 is true; statement 2 is false."],
+    answer:2,
+    solution:`<p><b>Both statements are true</b> &ndash; these are the two core assumptions of a linear cost function.</p>` },
+
+  { id:"6c", pts:4.0, type:"numeric", context:CTX_MAINT,
+    prompt:`<p class="instr">Using the high-low method, compute the fixed component of maintenance costs.</p><p class="note">[Round to nearest integer.]</p>`,
+    fields:[{label:"Fixed component",pre:"$",value:11000,tol:1}],
+    solution:`<p>Variable rate = (131,000 &minus; 32,000) &divide; (40,000 &minus; 7,000) = 99,000/33,000 = <b>$3/hour</b>.<br>
+    Fixed = 131,000 &minus; 3&times;40,000 = <b>$11,000</b> (check: 32,000 &minus; 3&times;7,000 = 11,000).</p>` },
+
+  { id:"6d", pts:8.0, type:"numeric", context:CTX_ORLEAL,
+    prompt:`<p class="instr">Estimate the intercept (Alpha) and slope (Beta) of the production cost function using the inspection-of-accounts method.</p><p class="note">[Round to nearest integer.]</p>`,
+    fields:[{label:"Alpha (intercept = fixed)",pre:"€",value:188000,tol:1},
+            {label:"Beta (slope = variable per bottle)",pre:"€",value:3,tol:0.01}],
+    solution:`<table><tr><th>Item</th><th class="num">Variable</th><th class="num">Fixed</th></tr>
+    <tr><td>Direct material</td><td class="num">158,000</td><td class="num">0</td></tr>
+    <tr><td>Direct labour</td><td class="num">120,000</td><td class="num">0</td></tr>
+    <tr><td>Electricity (80% / 20%)</td><td class="num">64,000</td><td class="num">16,000</td></tr>
+    <tr><td>Maintenance (20% / 80%)</td><td class="num">18,000</td><td class="num">72,000</td></tr>
+    <tr><td>Rent</td><td class="num">0</td><td class="num">100,000</td></tr>
+    <tr><td><b>Total</b></td><td class="num"><b>360,000</b></td><td class="num"><b>188,000</b></td></tr></table>
+    <p>Alpha = total fixed = <b>&euro;188,000</b>. Beta = 360,000 &divide; 120,000 = <b>&euro;3 per bottle</b>.</p>` },
+]},
+
+{ title:"MA — Decision-Making (Ch 9)", items:[
+  { id:"7a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Which item is irrelevant to the decision to replace currently used equipment?</p>`,
+    options:["Purchase price of the current equipment","Remaining useful life of the current equipment","Disposal value of the current equipment","Operating costs of the current equipment"],
+    answer:0,
+    solution:`<p><b>Purchase price of the current equipment</b> &ndash; a sunk cost, irrelevant to future decisions.</p>` },
+
+  { id:"7b", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Apollo can outsource Product X to Leto at &euro;500/unit (Apollo still supplies the direct material; Leto covers all other production costs). Freed capacity would make Product A. Which item is relevant?</p>`,
+    options:["Selling price of Product A","Direct materials","Selling price of Product X","All of the above"],
+    answer:0,
+    solution:`<p><b>Selling price of Product A</b> &ndash; the opportunity benefit from using freed capacity. Direct materials are incurred either way (Apollo supplies them), and X is sold at the same price regardless &ndash; both irrelevant.</p>` },
+
+  { id:"7c", pts:5.0, type:"mc", context:CTX_COMFY,
+    prompt:`<p class="instr">Maximum profit Comfy Inc. can expect next month is:</p>`,
+    options:["$ 64,800","$ 61,200","$ 52,800","$ 49,200"], answer:3,
+    solution:`<p>Contribution: leather 720 (240 min &rarr; $3/min); cotton 720 (180 min &rarr; $4/min). Upholstery limit = 300 hrs = 18,000 min &rarr; prioritise <b>cotton</b>.</p>
+    <p>40 cotton &times; 180 = 7,200 min; remaining 10,800 min &divide; 240 = 45 leather. Contribution = (40+45)&times;720 = 61,200. Profit = 61,200 &minus; 12,000 fixed = <b>$49,200</b>.</p>` },
+
+  { id:"7d", pts:5.0, type:"mc", context:CTX_WANDEROUS,
+    prompt:`<p class="instr">If Wanderous accepts the special order, its profit will:</p>`,
+    options:["increase by $85,000","increase by $70,000","decrease by $10,000","decrease by $60,000"], answer:3,
+    solution:`<p>Already at max capacity &rarr; the 5,000 special pairs displace 5,000 regular pairs.<br>
+    Special contribution = (35 &minus; 8) = $27/pair. Lost regular contribution = (50 &minus; 8 &minus; 3) = $39/pair.<br>
+    Net = 5,000 &times; (27 &minus; 39) = <b>&minus;$60,000 (decrease)</b>.</p>` },
+]},
+
+{ title:"MA — Budgeting Process (Ch 15)", items:[
+  { id:"8a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Which statement is NOT true about budgets?</p>`,
+    options:[
+      "A budget is a strategic tool that helps investors predict a company's future stock price.",
+      "A budget is a motivational tool that helps managers strive to achieve their goals.",
+      "A budget is a communication tool that informs managers about expectations.",
+      "A budget is a coordination tool that aligns activities across the organization."],
+    answer:0,
+    solution:`<p><b>First option.</b> Budgets are internal planning/control tools, not instruments for investors to predict stock prices.</p>` },
+
+  { id:"8b", pts:2.0, type:"mc",
+    prompt:`<p class="instr">During the budgeting process, a company prepares&hellip;</p>`,
+    options:[
+      "first the departmental budgets, then the sales budget.",
+      "first the sales budget, then the production budget.",
+      "first the master budget, then the sales budget.",
+      "first the sales budget, then the selling and administrative budget."],
+    answer:1,
+    solution:`<p><b>Sales budget first, then the production budget</b> &ndash; everything flows from expected sales.</p>` },
+
+  { id:"8c", pts:6.0, type:"numeric", context:CTX_ALPHA,
+    prompt:`<p class="instr">Calculate how many kilograms of material A the purchase manager has to buy.</p><p class="note">[Round to nearest integer.]</p>`,
+    fields:[{label:"Purchases of material A",suf:"kg",value:7000,tol:1}],
+    solution:`<p>Usage = 1,000 &times; 10 = 10,000 kg. Ending = 20% &times; 10,000 = 2,000 kg.<br>
+    Purchases = usage 10,000 + ending 2,000 &minus; beginning 5,000 = <b>7,000 kg</b>.</p>` },
+
+  { id:"8d", pts:5.0, type:"mc", context:CTX_EOS,
+    prompt:`<p class="instr">Total production overhead Eos budgets for 2020 is:</p>`,
+    options:["$ 270,000","$ 216,000","$ 150,000","$ 135,000"], answer:0, uncertain:true,
+    solution:`<p>Variable OH per unit = $6 &times; (2 hrs &times; $10) = $120; fixed OH = $15/unit &rarr; $135/unit total OH. &ldquo;Total production overhead&rdquo; must include fixed, so among the options only <b>$270,000</b> covers both variable ($216,000) and fixed.</p>
+    <p class="warn">&#9888; This is the one question whose individual grade wasn&rsquo;t in the screenshots you shared, so it&rsquo;s unverified. Note: by-the-book budgeted production = sales 2,000 + closing 300 &minus; opening 500 = 1,800 units, which gives $243,000 (not an option) &ndash; the keyed answer appears to use 2,000 units. $216,000 (variable only) is the classic &ldquo;forgot the fixed overhead&rdquo; trap. Double-check this one with your lecturer.</p>` },
+]},
+
+{ title:"MA — Variances (Ch 17 & 18)", items:[
+  { id:"9a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Standard costing is suitable for a company which has:</p>`,
+    options:["input that can be specified","activities that are repetitive","output that can be measured","All of the above."],
+    answer:3,
+    solution:`<p><b>All of the above</b> are needed for meaningful standards.</p>` },
+
+  { id:"9b", pts:3.0, type:"mc", context:CTX_SKEIRON,
+    prompt:`<p class="instr">Fixed overhead expenditure variance for 2023 is:</p>`,
+    options:["$ 16,000 adverse","$ 12,000 favourable","$ 8,000 favourable","$ 20,000 adverse"], answer:0,
+    solution:`<p>Total fixed OH variance = under-recovery = $4,000 A.<br>
+    Volume variance = capacity (6,000 A) + efficiency (18,000 F) = 12,000 F.<br>
+    Expenditure = total &minus; volume = &minus;4,000 &minus; 12,000 = <b>$16,000 adverse</b>.</p>` },
+
+  { id:"9c", pts:5.0, type:"mc", context:CTX_LYNX,
+    prompt:`<p class="instr">Direct material price variance for 2020 is:</p>`,
+    options:["$ 62,000 adverse","$ 12,500 favourable","$ 77,500 adverse","$ 10,000 favourable"], answer:1,
+    solution:`<p>Std qty for actual output = 8,000 &times; 3 = 24,000 kg. Usage variance = (24,000 &minus; 20,000) &times; SP = 24,000 &rarr; <b>SP = $6/kg</b>.<br>
+    Actual price = 137,500 &divide; 25,000 = $5.50/kg.<br>
+    Price variance = (6 &minus; 5.50) &times; 25,000 = <b>$12,500 favourable</b>.</p>` },
+
+  { id:"9d", pts:5.0, type:"mc", context:CTX_TITAN,
+    prompt:`<p class="instr">Variable overhead efficiency variance for 2019 is:</p>`,
+    options:["&euro; 150,000 adverse","&euro; 95,000 favourable","&euro; 110,000 adverse","&euro; 115,500 adverse"], answer:2,
+    solution:`<p>Actual production = sales 40,000 + ending 11,000 &minus; opening 1,000 = 50,000 units.<br>
+    Std hours = 50,000 &times; 0.5 = 25,000; actual hours = 35,000.<br>
+    VOH efficiency = (25,000 &minus; 35,000) &times; &euro;11 = <b>&euro;110,000 adverse</b>.</p>` },
+]},
+];
+
+/* ===================== STATE ===================== */
+const TOTAL_MS = 2*60*60*1000; // 2 hours
+const FLAT=[]; EXAM.forEach((s,si)=>s.items.forEach((q)=>{q._s=si;q._sectionTitle=s.title;q._bonus=/bonus/i.test(s.title);FLAT.push(q);}));
+const TOTAL=FLAT.length;
+const MAXPTS=FLAT.filter(q=>!q._bonus).reduce((a,q)=>a+q.pts,0); // gradeable max (bonus excluded)
+let cur=0;
+
+const S = Object.assign({mode:'sowiso',phase:'answering',answers:{},checked:{},results:null}, JSON.parse(localStorage.getItem('famaState')||'{}'));
+const T = Object.assign({elapsedMs:0,running:false,lastStart:0,hidden:false}, JSON.parse(localStorage.getItem('famaTimer')||'{}'));
+let timerInt=null;
+
+function saveState(){localStorage.setItem('famaState',JSON.stringify({mode:S.mode,phase:S.phase,answers:S.answers,checked:S.checked,results:S.results}));}
+function saveTimer(){localStorage.setItem('famaTimer',JSON.stringify({elapsedMs:T.elapsedMs,running:T.running,lastStart:T.lastStart,hidden:T.hidden}));}
+function num(v){const n=parseFloat(String(v).replace(/[,\s€$£%]/g,''));return isNaN(n)?null:n;}
+function esc(s){return String(s==null?'':s).replace(/"/g,'&quot;');}
+function fmt(ms){const s=Math.max(0,Math.floor(ms/1000));const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;return h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0');}
+
+/* ===================== TIMER ===================== */
+function timerElapsed(){return T.elapsedMs+(T.running?(Date.now()-T.lastStart):0);}
+function timerRemaining(){return Math.max(0,TOTAL_MS-timerElapsed());}
+function timerStart(){if(T.running)return;T.running=true;T.lastStart=Date.now();saveTimer();tickTimer();}
+function timerPause(){if(!T.running)return;T.elapsedMs=timerElapsed();T.running=false;T.lastStart=0;clearInterval(timerInt);saveTimer();renderTimer();}
+function timerReset(){if(!confirm('Reset the timer to 2:00:00?'))return;T.elapsedMs=0;T.running=false;T.lastStart=0;clearInterval(timerInt);saveTimer();renderTimer();}
+function timerToggleHide(){T.hidden=!T.hidden;saveTimer();renderTimer();}
+function tickTimer(){clearInterval(timerInt);timerInt=setInterval(renderTimer,1000);renderTimer();}
+
+/* ===================== ANSWER HELPERS ===================== */
+function isAnswered(qid){const a=S.answers[qid];if(!a)return false;const q=FLAT.find(x=>x.id===qid);
+  if(q.type==='mc')return a.mc!=null&&a.mc>=0;
+  if(q.type==='numeric')return (a.nums||[]).some(x=>String(x).trim()!=='');
+  if(q.type==='journal')return (a.rows||[]).some(r=>r.account&&((num(r.debit)||0)||(num(r.credit)||0)));
+  return false;}
+function gradeQuestion(q){
+  const a=S.answers[q.id];
+  if(q.type==='mc'){if(!a||a.mc==null||a.mc<0)return{status:'blank',frac:0};return a.mc===q.answer?{status:'correct',frac:1}:{status:'wrong',frac:0};}
+  if(q.type==='numeric'){const nums=(a&&a.nums)||[];if(!nums.some(x=>String(x).trim()!==''))return{status:'blank',frac:0};
+    let c=0;q.fields.forEach((f,i)=>{const v=num(nums[i]);if(v!==null&&Math.abs(v-f.value)<=(f.tol??1))c++;});
+    const frac=c/q.fields.length;return{status:frac===1?'correct':(frac>0?'partial':'wrong'),frac};}
+  if(q.type==='journal'){const rows=((a&&a.rows)||[]).filter(r=>r.account&&((num(r.debit)||0)||(num(r.credit)||0)));
+    if(!rows.length)return{status:'blank',frac:0};
+    const need=q.rows.map(r=>({...r,used:false}));let m=0;
+    rows.forEach(r=>{const f=need.find(n=>!n.used&&n.account===r.account&&Math.abs(n.debit-(num(r.debit)||0))<=1&&Math.abs(n.credit-(num(r.credit)||0))<=1);if(f){f.used=true;m++;}});
+    const frac=m/q.rows.length;return{status:(m===q.rows.length&&rows.length===q.rows.length)?'correct':(m>0?'partial':'wrong'),frac};}
+}
+
+/* ===================== RENDER ===================== */
+function isLocked(qid){return S.phase==='submitted'||(S.mode==='sowiso'&&S.checked[qid]&&S.checked[qid].solViewed);}
+function render(){
+  const q=FLAT[cur];
+  const rec=S.checked[q.id];
+  const reveal=(S.mode==='sowiso'&&rec)||S.phase==='submitted';
+  // dots
+  const sec=EXAM[q._s];const dots=document.getElementById('dots');dots.innerHTML='';
+  sec.items.forEach(it=>{const d=document.createElement('div');d.className='d '+dotClass(it.id);d.title='Q'+it.id;d.style.cursor='pointer';d.onclick=()=>{capture();cur=FLAT.indexOf(it);render();};dots.appendChild(d);});
+  // mastery toast (clean first-try correct only)
+  const toast=document.getElementById('toast');
+  if(S.mode==='sowiso'&&S.phase!=='submitted'&&rec&&rec.status==='correct'&&(rec.attempts||1)<=1&&!rec.peeked){toast.classList.add('show');document.getElementById('toastTxt').textContent='You already master '+q.id.toUpperCase();}
+  else toast.classList.remove('show');
+  // actions depend on mode/phase
+  let actions;
+  if(S.phase==='submitted'){
+    actions=`<span class="spacer"></span><button class="btn ghost" onclick="toggleCalc(true)">&#9636; Calculator</button><button class="btn ghost" onclick="showSolution()">&#10022; Solution</button>`;
+  }else if(S.mode==='sowiso'){
+    actions=`<button class="btn check" onclick="check()" ${isLocked(q.id)?'disabled style="opacity:.4;cursor:default"':''}>&#10003; Check</button><span class="spacer"></span><button class="btn ghost" onclick="toggleCalc(true)">&#9636; Calculator</button><button class="btn ghost" onclick="showSolution()">&#10022; Solution</button>`;
+  }else{
+    actions=`<span class="exnote">Exam mode &middot; graded when you hand in</span><span class="spacer"></span><button class="btn ghost" onclick="toggleCalc(true)">&#9636; Calculator</button>`;
+  }
+  const c=document.getElementById('card');
+  let html=`<div class="crumb">${q._sectionTitle}</div>
+    <div class="qtitle"><span class="pencil">&#9998;</span> Question ${q.id.toUpperCase()}<span class="badge">${q.pts} pt</span></div>
+    <hr class="rule">`;
+  if(q.context) html+=`<div class="context">${q.context}</div>`;
+  html+=`<div class="qbody">${q.prompt}</div>`;
+  html+=`<div id="inputArea">${renderInput(q)}</div>`;
+  html+=`<div class="actions">${actions}</div>
+    <div class="feedback" id="feedback"></div>
+    <div class="solution" id="solution"><h4>Solution</h4>${q.solution}</div>`;
+  c.innerHTML=html;
+  if(reveal){
+    const g=markQuestion(q);
+    if(S.phase==='submitted'){
+      document.getElementById('solution').classList.add('show');
+      setFB(g.status,resultLine(q));
+    }else{
+      if(rec.status==='correct'){
+        const clean=(rec.attempts||1)<=1&&!rec.peeked;
+        setFB(clean?'correct':'partial',clean?'&#10003; Correct!':'&#10003; Correct &ndash; but not on your first try.');
+      }else if(rec.solViewed){
+        setFB('partial','Solution shown &ndash; this question is now locked. The answer is in the solution below.');
+      }else{
+        setFB(g.status,feedbackMsg(q,g));
+      }
+      if(rec.solViewed)document.getElementById('solution').classList.add('show');
+    }
+  }
+  if(isLocked(q.id)){
+    document.querySelectorAll('#inputArea input,#inputArea select').forEach(el=>el.disabled=true);
+    document.querySelectorAll('#inputArea .opt').forEach(el=>el.style.pointerEvents='none');
+    document.querySelectorAll('#inputArea .trash,#inputArea .addrow').forEach(el=>el.style.display='none');
+  }
+  document.getElementById('prevBtn').disabled=(cur===0);
+  document.getElementById('nextBtn').disabled=(cur===TOTAL-1);
+  renderSidebar();
+}
+
+function dotClass(qid){
+  if(S.phase==='submitted'){const s=S.checked[qid];return s?(s.status==='correct'?'correct':s.status==='partial'?'partial':s.status==='blank'?'':'attempted'):'';}
+  if(S.mode==='sowiso'){const s=S.checked[qid];if(!s)return '';
+    if(s.status==='correct')return ((s.attempts||1)>1||s.peeked)?'partial':'correct';
+    if(s.solViewed)return 'partial';
+    if(s.status==='wrong'||s.status==='partial')return 'attempted';
+    return '';}
+  return isAnswered(qid)?'answered':'';
+}
+
+function renderInput(q){
+  const A=S.answers[q.id]||{};
+  if(q.type==='mc'){
+    return `<div class="opts">`+q.options.map((o,i)=>`<div class="opt${A.mc===i?' sel':''}" data-i="${i}" onclick="selOpt(${i})"><span class="mark">&#10003;</span><span>${o}</span></div>`).join('')+`</div>`;
+  }
+  if(q.type==='numeric'){
+    const vals=A.nums||[];
+    if(q.layout==='table'){
+      let r=`<table class="jrnl"><tr><th>${q.tableHead[0]}</th><th class="num">${q.tableHead[1]}</th></tr>`;
+      q.fields.forEach((f,i)=>{r+=`<tr><td ${f.bold?'style="font-weight:700"':''}>${f.label}</td><td class="num"><input class="ninput" id="nf${i}" inputmode="decimal" value="${esc(vals[i])}" oninput="capture()"></td></tr>`;});
+      return r+`</table>`;
+    }
+    return q.fields.map((f,i)=>`<div class="nfield"><label>${f.label}</label>${f.pre?`<span class="pre">${f.pre}</span>`:''}<input class="ninput" id="nf${i}" inputmode="decimal" value="${esc(vals[i])}" oninput="capture()">${f.suf?`<span class="pre">${f.suf}</span>`:''}<span class="ftick" id="ft${i}"></span></div>`).join('');
+  }
+  if(q.type==='journal'){
+    const opt=a=>`<option value="">Select</option>`+q.accounts.map(x=>`<option ${x===a?'selected':''}>${x}</option>`).join('');
+    const rows=(A.rows&&A.rows.length)?A.rows:Array.from({length:Math.max(2,q.rows.length)},()=>({account:'',debit:'',credit:''}));
+    let r=`<table class="jrnl" id="jt"><tr><th>Account</th><th class="num">Debit</th><th class="num">Credit</th><th></th></tr>`;
+    rows.forEach(row=>{r+=`<tr><td><select class="selacct" onchange="capture()">${opt(row.account)}</select></td><td class="num"><input class="amt" inputmode="decimal" value="${esc(row.debit)}" oninput="capture()"></td><td class="num"><input class="amt" inputmode="decimal" value="${esc(row.credit)}" oninput="capture()"></td><td><button class="trash" onclick="delRow(this)">&#128465;</button></td></tr>`;});
+    return r+`</table><button class="addrow" onclick="addRow()">+ Add a journal entry</button>`;
+  }
+  return '';
+}
+
+function markQuestion(q){
+  const g=gradeQuestion(q);
+  if(q.type==='mc'){const A=S.answers[q.id]||{};const rec=S.checked[q.id];
+    const orange=S.phase!=='submitted'&&rec&&((rec.status==='correct'&&((rec.attempts||1)>1||rec.peeked))||(rec.solViewed&&rec.status!=='correct'));
+    document.querySelectorAll('.opt').forEach((o,i)=>{o.classList.remove('right','wrong','rightmid');if(i===q.answer)o.classList.add(orange?'rightmid':'right');if(A.mc===i&&i!==q.answer)o.classList.add('wrong');});
+  }else if(q.type==='numeric'){const nums=(S.answers[q.id]&&S.answers[q.id].nums)||[];
+    q.fields.forEach((f,i)=>{const el=document.getElementById('nf'+i);if(!el)return;const t=document.getElementById('ft'+i);const raw=nums[i];if(raw==null||String(raw).trim()===''){el.classList.remove('ok','no');if(t){t.className='ftick';t.innerHTML='';}return;}const v=num(raw);const good=v!==null&&Math.abs(v-f.value)<=(f.tol??1);el.classList.toggle('ok',good);el.classList.toggle('no',!good);if(t){t.className='ftick '+(good?'ok':'no');t.innerHTML=good?'&#10003;':'&#10007;';}});
+  }else if(q.type==='journal'){const need=q.rows.map(r=>({...r,used:false}));
+    [...document.querySelectorAll('#jt tr')].slice(1).forEach(tr=>{const sel=tr.querySelector('select');const ins=tr.querySelectorAll('input');const acc=sel?sel.value:'';const d=num(ins[0].value)||0;const cc=num(ins[1].value)||0;ins[0].classList.remove('ok','no');ins[1].classList.remove('ok','no');if(!acc&&!d&&!cc)return;const m=need.find(n=>!n.used&&n.account===acc&&Math.abs(n.debit-d)<=1&&Math.abs(n.credit-cc)<=1);if(m){m.used=true;ins[0].classList.add('ok');ins[1].classList.add('ok');}else{ins[0].classList.add('no');ins[1].classList.add('no');}});
+  }
+  return g;
+}
+
+function setFB(status,html){const f=document.getElementById('feedback');if(!f)return;const cls=(status===true||status==='correct')?'good':(status==='partial'?'mid':'bad');f.className='feedback show '+cls;f.innerHTML=html;}
+function feedbackMsg(q,g){
+  if(g.status==='correct')return '&#10003; Correct!';
+  if(g.status==='partial')return '&#9685; Partially correct ('+Math.round(g.frac*100)+'%) &ndash; click Solution to see the full answer.';
+  return q.type==='mc'
+    ? '&#10007; Not quite &ndash; the correct option is shown in green. Click Solution for why.'
+    : '&#10007; Incorrect &ndash; click Solution to see the correct answer.';
+}
+function resultLine(q){const r=S.results.per[q.id];const lab={correct:'&#10003; Correct',wrong:'&#10007; Wrong',partial:'&#9685; Partially correct',blank:'&ndash; Left blank'}[r.status];return `${lab} &middot; ${r.pts>=0?'+':''}${r.pts.toFixed(2)} / ${q.pts} pts`;}
+
+/* ===================== SIDEBAR ===================== */
+function renderSidebar(){
+  document.getElementById('modeSowiso').classList.toggle('active',S.mode==='sowiso');
+  document.getElementById('modeExam').classList.toggle('active',S.mode==='exam');
+  document.getElementById('modeHint').innerHTML = S.phase==='submitted' ? 'Reviewing your handed-in answers.' : (S.mode==='sowiso'?'Practice: Check &amp; Solution after each question.':'Exam: no feedback until you hand in.');
+  renderTimer();
+  renderScore();
+  document.getElementById('handinBtn').style.display = S.phase==='submitted' ? 'none' : 'block';
+  const nav=document.getElementById('nav');nav.innerHTML='';
+  EXAM.forEach(s=>{const h=document.createElement('div');h.className='secttl';h.textContent=s.title;nav.appendChild(h);
+    s.items.forEach(q=>{const idx=FLAT.indexOf(q);const it=document.createElement('div');it.className='navitem'+(idx===cur?' active':'');it.onclick=()=>{capture();cur=idx;render();};it.innerHTML=`<span class="dot ${dotClass(q.id)}"></span><span>Q${q.id.toUpperCase()}</span><span class="pts">${q.pts} pt</span>`;nav.appendChild(it);});
+  });
+}
+function renderScore(){
+  const p=document.getElementById('scorePanel');
+  if(S.phase==='submitted'&&S.results){const R=S.results;
+    p.innerHTML=`<div class="gradebig">${R.grade.toFixed(1)}<span>/10</span></div><div class="gradesub">${R.total.toFixed(1)} / ${R.maxPts} pts &middot; &#9201; ${fmt(R.timeMs)}</div><div class="bar"><i style="width:${Math.min(100,R.total/R.maxPts*100)}%"></i></div><button class="reviewbtn" onclick="showResults()">View result summary</button>`;return;}
+  if(S.mode==='exam'){const ans=FLAT.filter(q=>isAnswered(q.id)).length;p.innerHTML=`<div><b>${ans}</b> / ${TOTAL} answered</div><div class="bar"><i style="width:${ans/TOTAL*100}%"></i></div>`;return;}
+  const done=FLAT.filter(q=>S.checked[q.id]&&S.checked[q.id].status==='correct').length;p.innerHTML=`<div><b>${done}</b> / ${TOTAL} correct</div><div class="bar"><i style="width:${done/TOTAL*100}%"></i></div>`;
+}
+function renderTimer(){
+  const box=document.getElementById('timerbox');if(!box)return;
+  if(T.hidden){box.innerHTML=`<button class="tbtn wide" onclick="timerToggleHide()">Show timer</button>`;return;}
+  const rem=timerRemaining();const up=rem<=0;
+  box.innerHTML=`<div class="timer ${up?'up':''}">${up?'0:00:00':fmt(rem)}</div>${up?'<div class="timeup">Time&rsquo;s up &ndash; you can still continue</div>':''}<div class="trow"><button class="tbtn" onclick="${T.running?'timerPause()':'timerStart()'}">${T.running?'Pause':'Start'}</button><button class="tbtn" onclick="timerReset()">Reset</button><button class="tbtn" onclick="timerToggleHide()">Hide</button></div>`;
+}
+
+/* ===================== INPUT CAPTURE ===================== */
+function selOpt(i){const q=FLAT[cur];if(isLocked(q.id))return;S.answers[q.id]={mc:i};saveState();document.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));const el=document.querySelector('.opt[data-i="'+i+'"]');if(el)el.classList.add('sel');renderSidebar();}
+function capture(){const q=FLAT[cur];if(!q||isLocked(q.id))return;
+  if(q.type==='numeric'){S.answers[q.id]={nums:q.fields.map((f,i)=>{const el=document.getElementById('nf'+i);return el?el.value:'';})};}
+  else if(q.type==='journal'){S.answers[q.id]={rows:[...document.querySelectorAll('#jt tr')].slice(1).map(tr=>{const sel=tr.querySelector('select');const ins=tr.querySelectorAll('input');return{account:sel?sel.value:'',debit:ins[0]?ins[0].value:'',credit:ins[1]?ins[1].value:''};})};}
+  else return;
+  saveState();if(S.mode==='exam')renderSidebar();}
+function addRow(){if(isLocked(FLAT[cur].id))return;capture();const q=FLAT[cur];S.answers[q.id]=S.answers[q.id]||{rows:[]};S.answers[q.id].rows=S.answers[q.id].rows||[];S.answers[q.id].rows.push({account:'',debit:'',credit:''});saveState();render();}
+function delRow(b){if(isLocked(FLAT[cur].id))return;capture();const tr=b.closest('tr');const idx=[...tr.parentNode.rows].indexOf(tr)-1;const q=FLAT[cur];const rows=(S.answers[q.id]&&S.answers[q.id].rows)||[];if(rows.length>2){rows.splice(idx,1);saveState();render();}}
+
+/* ===================== CHECK (SOWISO) ===================== */
+function check(){const q=FLAT[cur];if(isLocked(q.id))return;capture();
+  if(q.type==='mc'&&(!S.answers[q.id]||S.answers[q.id].mc==null||S.answers[q.id].mc<0)){setFB('blank','Select an option first.');return;}
+  const rec=S.checked[q.id]||{attempts:0,solViewed:false,peeked:false};
+  rec.attempts=(rec.attempts||0)+1;
+  const g=gradeQuestion(q);rec.status=g.status;rec.frac=g.frac;S.checked[q.id]=rec;saveState();
+  markQuestion(q);
+  if(g.status==='correct'){
+    const clean=rec.attempts<=1&&!rec.peeked;
+    setFB(clean?'correct':'partial',clean?'&#10003; Correct!':'&#10003; Correct &ndash; but not on your first try.');
+    if(clean){const t=document.getElementById('toast');t.classList.add('show');document.getElementById('toastTxt').textContent='You already master '+q.id.toUpperCase();}
+  }else{
+    setFB(g.status,feedbackMsg(q,g));
+  }
+  renderSidebar();
+}
+function showSolution(){const q=FLAT[cur];const s=document.getElementById('solution');const opening=!s.classList.contains('show');
+  if(opening&&S.mode==='sowiso'&&S.phase!=='submitted'){const rec=S.checked[q.id]||{attempts:0,status:'blank',frac:0};rec.solViewed=true;if(rec.status!=='correct')rec.peeked=true;if(!rec.status)rec.status='blank';S.checked[q.id]=rec;saveState();render();const sol=document.getElementById('solution');sol.classList.add('show');sol.scrollIntoView({behavior:'smooth',block:'nearest'});return;}
+  s.classList.toggle('show');s.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function go(d){capture();cur=Math.min(TOTAL-1,Math.max(0,cur+d));render();window.scrollTo(0,0);document.getElementById('main').scrollTo(0,0);}
+
+/* ===================== MODE + HAND-IN ===================== */
+function setMode(m){if(m===S.mode&&S.phase!=='submitted')return;capture();S.mode=m;if(S.phase==='submitted'){S.phase='answering';S.results=null;}saveState();render();}
+function handIn(){capture();const answered=FLAT.filter(q=>isAnswered(q.id)).length;
+  if(!confirm('Hand in now? '+answered+' of '+TOTAL+' answered.\n\nYou will see your score and the correct answers.'))return;
+  timerPause();gradeAll();S.phase='submitted';saveState();render();showResults();}
+function gradeAll(){let earned=0,bonus=0,mcR=0,mcW=0,mcB=0;const per={};
+  FLAT.forEach(q=>{const g=gradeQuestion(q);let p=0;
+    if(q.type==='mc'){if(g.status==='correct'){p=q.pts;mcR++;}else if(g.status==='wrong'){p=0;mcW++;}else{p=0;mcB++;}}
+    else{p=q.pts*g.frac;}
+    per[q.id]={status:g.status,frac:g.frac,pts:p};S.checked[q.id]={status:g.status,frac:g.frac};
+    if(q._bonus)bonus+=p;else earned+=p;});
+  const total=earned+bonus;const grade=Math.max(1,Math.min(10,1+9*(total/MAXPTS)));
+  S.results={per,earned,bonus,total,grade,mcR,mcW,mcB,maxPts:MAXPTS,timeMs:timerElapsed()};}
+function showResults(){if(!S.results)return;const R=S.results;let rows='';
+  FLAT.forEach(q=>{const r=R.per[q.id];const ic={correct:'&#10003;',wrong:'&#10007;',partial:'&#9685;',blank:'&middot;'}[r.status];
+    rows+=`<tr class="${r.status}"><td>${q.id.toUpperCase()}${q._bonus?' <span class="bonustag">bonus</span>':''}</td><td class="ic">${ic}</td><td class="num">${r.pts>=0?'+':''}${r.pts.toFixed(2)}</td><td class="num">${q.pts}</td></tr>`;});
+  document.getElementById('resultsInner').innerHTML=`<h2>Exam handed in</h2>
+    <div class="gradehero">${R.grade.toFixed(1)}<span>/ 10</span></div>
+    <div class="hero2">${R.total.toFixed(1)} / ${R.maxPts} points${R.bonus?` (incl. bonus +${R.bonus.toFixed(2)})`:''}</div>
+    <div class="hero3">&#9201; Time used <b>${fmt(R.timeMs)}</b> &nbsp;&middot;&nbsp; MC: ${R.mcR}&#10003; / ${R.mcW}&#10007; / ${R.mcB}&middot;</div>
+    <table class="restable"><tr><th>Q</th><th></th><th class="num">Earned</th><th class="num">Max</th></tr>${rows}</table>
+    <div class="resbtns"><button class="btn check" onclick="closeResults()">Review answers &amp; solutions</button><button class="btn ghost" onclick="resetAll()">New attempt</button></div>`;
+  document.getElementById('resultsModal').classList.add('show');}
+function closeResults(){document.getElementById('resultsModal').classList.remove('show');}
+function resetAll(){if(!confirm('Start a new attempt? This clears your answers, score and timer.'))return;S.answers={};S.checked={};S.results=null;S.phase='answering';T.elapsedMs=0;T.running=false;T.lastStart=0;clearInterval(timerInt);cur=0;saveState();saveTimer();closeResults();render();}
+
+/* ===================== CALCULATOR ===================== */
+let calcStr='';
+function toggleCalc(show){document.getElementById('calcModal').classList.toggle('show',show);}
+function calcIn(c){calcStr+=c;document.getElementById('calcDisp').textContent=calcStr;}
+function calcClear(){calcStr='';document.getElementById('calcDisp').textContent='0';}
+function calcDel(){calcStr=calcStr.slice(0,-1);document.getElementById('calcDisp').textContent=calcStr||'0';}
+function calcEq(){try{const r=Function('"use strict";return ('+calcStr+')')();calcStr=String(r);document.getElementById('calcDisp').textContent=calcStr;}catch(e){document.getElementById('calcDisp').textContent='Error';calcStr='';}}
+
+/* ===================== INIT ===================== */
+// Enter = Check (SOWISO mode only)
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter')return;
+  if(S.mode!=='sowiso'||S.phase==='submitted')return;
+  if(document.getElementById('calcModal').classList.contains('show'))return;
+  if(document.getElementById('resultsModal').classList.contains('show'))return;
+  if(document.activeElement&&document.activeElement.tagName==='BUTTON')return; // let a focused button handle its own Enter
+  if(isLocked(FLAT[cur].id))return;
+  e.preventDefault();
+  check();
+});
+if(T.running)tickTimer();
+render();
+</script>
+</body>
+</html>
