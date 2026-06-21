@@ -157,11 +157,43 @@
   .calc button.fn{background:#f3dde7;color:var(--accent)}
   .calc .close{margin-top:10px;width:100%;background:#fff;border:1px solid #ddd;border-radius:10px;padding:8px;cursor:pointer}
 
+  /* ---------- mobile top bar + drawer (hidden on desktop) ---------- */
+  #topbar{display:none}
+  #drawerOverlay{display:none}
+
   @media(max-width:820px){
-    body{flex-direction:column}
-    #sidebar{width:100%;height:auto;flex:none;max-height:230px}
-    #main{height:auto;padding:18px 10px 60px}
-    .card{padding:20px 16px 24px}
+    body{display:block;min-height:100vh}
+    /* fixed top bar */
+    #topbar{display:flex;align-items:center;gap:10px;position:fixed;top:0;left:0;right:0;height:54px;
+      background:#fff;border-bottom:1px solid #e0e0ee;z-index:40;padding:0 12px;box-shadow:0 2px 8px rgba(60,60,110,.06)}
+    .menubtn{border:none;background:#f1f1fb;color:var(--navy);font-size:20px;line-height:1;width:40px;height:40px;border-radius:10px;cursor:pointer;flex:0 0 40px}
+    .tbtitle{font-weight:800;color:var(--navy);font-size:15px}
+    .minitimer{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:800;font-size:19px;color:var(--navy);padding:6px 10px;border-radius:9px;background:#f4f4fb;min-width:82px;text-align:center}
+    .minitimer.up{color:var(--bad)}
+    /* sidebar becomes a slide-in drawer */
+    #sidebar{position:fixed;top:0;bottom:0;left:0;height:100vh;max-height:none;width:86%;max-width:330px;
+      flex:none;transform:translateX(-100%);transition:transform .25s ease;z-index:55;box-shadow:6px 0 30px rgba(0,0,0,.25);overflow-y:auto}
+    #sidebar.open{transform:translateX(0)}
+    #drawerOverlay{display:block;position:fixed;inset:0;background:rgba(40,40,70,.4);z-index:50;opacity:0;pointer-events:none;transition:opacity .25s}
+    #drawerOverlay.open{opacity:1;pointer-events:auto}
+    /* main content full width */
+    #main{height:auto;padding:66px 12px 36px}
+    .stage{padding-bottom:36px}
+    .card{padding:18px 15px 22px;border-radius:16px}
+    .qtitle{font-size:21px}
+    .crumb{font-size:12px}
+    .context{font-size:14px;padding:13px 15px}
+    table.data,table.jrnl{font-size:13.5px}
+    /* bigger touch targets */
+    .opt{padding:14px 15px;font-size:15.5px}
+    .ninput,.amt,.selacct{font-size:16px}   /* >=16px stops iOS zoom-on-focus */
+    .selacct{padding:10px 30px 10px 16px;min-width:150px}
+    .amt{width:108px}
+    .nfield label{min-width:160px}
+    .actions{gap:10px;margin-top:20px}
+    .btn{padding:12px 18px;font-size:15px}
+    .pager{gap:10px}
+    .pager button{flex:1;padding:14px 10px;font-size:15px}
   }
   /* mode + timer + handin */
   .modepanel{display:flex;gap:6px;margin:2px 4px 8px}
@@ -213,6 +245,12 @@
 </style>
 </head>
 <body>
+  <header id="topbar">
+    <button class="menubtn" onclick="toggleDrawer(true)" aria-label="Open menu">&#9776;</button>
+    <div class="tbtitle">FA / MA Exam</div>
+    <div id="miniTimer" class="minitimer" onclick="toggleDrawer(true)"></div>
+  </header>
+  <div id="drawerOverlay" onclick="toggleDrawer(false)"></div>
   <aside id="sidebar">
     <h1>FA / MA — Practice Exam</h1>
     <div class="sub">9 questions · timed 2:00:00</div>
@@ -903,7 +941,7 @@ function renderSidebar(){
   document.getElementById('handinBtn').style.display = S.phase==='submitted' ? 'none' : 'block';
   const nav=document.getElementById('nav');nav.innerHTML='';
   EXAM.forEach(s=>{const h=document.createElement('div');h.className='secttl';h.textContent=s.title;nav.appendChild(h);
-    s.items.forEach(q=>{const idx=FLAT.indexOf(q);const it=document.createElement('div');it.className='navitem'+(idx===cur?' active':'');it.onclick=()=>{capture();cur=idx;render();};it.innerHTML=`<span class="dot ${dotClass(q.id)}"></span><span>Q${q.id.toUpperCase()}</span><span class="pts">${q.pts} pt</span>`;nav.appendChild(it);});
+    s.items.forEach(q=>{const idx=FLAT.indexOf(q);const it=document.createElement('div');it.className='navitem'+(idx===cur?' active':'');it.onclick=()=>{capture();cur=idx;render();toggleDrawer(false);};it.innerHTML=`<span class="dot ${dotClass(q.id)}"></span><span>Q${q.id.toUpperCase()}</span><span class="pts">${q.pts} pt</span>`;nav.appendChild(it);});
   });
 }
 function renderScore(){
@@ -913,10 +951,13 @@ function renderScore(){
   if(S.mode==='exam'){const ans=FLAT.filter(q=>isAnswered(q.id)).length;p.innerHTML=`<div><b>${ans}</b> / ${TOTAL} answered</div><div class="bar"><i style="width:${ans/TOTAL*100}%"></i></div>`;return;}
   const done=FLAT.filter(q=>S.checked[q.id]&&S.checked[q.id].status==='correct').length;p.innerHTML=`<div><b>${done}</b> / ${TOTAL} correct</div><div class="bar"><i style="width:${done/TOTAL*100}%"></i></div>`;
 }
+function toggleDrawer(open){const sb=document.getElementById('sidebar');const ov=document.getElementById('drawerOverlay');if(open===undefined)open=!sb.classList.contains('open');sb.classList.toggle('open',open);ov.classList.toggle('open',open);}
 function renderTimer(){
+  const rem=timerRemaining();const up=rem<=0;
+  const mini=document.getElementById('miniTimer');
+  if(mini){mini.textContent=T.hidden?'—:—':(up?'0:00:00':fmt(rem));mini.classList.toggle('up',up&&!T.hidden);}
   const box=document.getElementById('timerbox');if(!box)return;
   if(T.hidden){box.innerHTML=`<button class="tbtn wide" onclick="timerToggleHide()">Show timer</button>`;return;}
-  const rem=timerRemaining();const up=rem<=0;
   box.innerHTML=`<div class="timer ${up?'up':''}">${up?'0:00:00':fmt(rem)}</div>${up?'<div class="timeup">Time&rsquo;s up &ndash; you can still continue</div>':''}<div class="trow"><button class="tbtn" onclick="${T.running?'timerPause()':'timerStart()'}">${T.running?'Pause':'Start'}</button><button class="tbtn" onclick="timerReset()">Reset</button><button class="tbtn" onclick="timerToggleHide()">Hide</button></div>`;
 }
 
@@ -953,7 +994,7 @@ function go(d){capture();cur=Math.min(TOTAL-1,Math.max(0,cur+d));render();window
 
 /* ===================== MODE + HAND-IN ===================== */
 function setMode(m){if(m===S.mode&&S.phase!=='submitted')return;capture();S.mode=m;if(S.phase==='submitted'){S.phase='answering';S.results=null;}saveState();render();}
-function handIn(){capture();const answered=FLAT.filter(q=>isAnswered(q.id)).length;
+function handIn(){toggleDrawer(false);capture();const answered=FLAT.filter(q=>isAnswered(q.id)).length;
   if(!confirm('Hand in now? '+answered+' of '+TOTAL+' answered.\n\nYou will see your score and the correct answers.'))return;
   timerPause();gradeAll();S.phase='submitted';saveState();render();showResults();}
 function gradeAll(){let earned=0,bonus=0,mcR=0,mcW=0,mcB=0;const per={};
