@@ -295,8 +295,8 @@
   body.dark .ninput,body.dark .amt{color:#e7e7f2;border-bottom-color:#4a4b66}
   body.dark .selacct{background:#262737;color:#e7e7f2;border-color:#3a3b52}
   body.dark .score,body.dark .timerbox{background:#20212e;border-color:#2c2d40}
-  body.dark .modebtn{background:#262737;border-color:#3a3b52;color:#e7e7f2}
-  body.dark .modebtn.active{background:#4b4a6b;border-color:#4b4a6b;color:#fff}
+  body.dark .modebtn{background:#262737;border-color:#3a3b52;color:#b9b9d4}
+  body.dark .modebtn.active{background:#f0f0f6;border-color:#f0f0f6;color:#20212e}
   body.dark .tbtn{background:#2a2b3c;border-color:#3a3b52;color:#e7e7f2}
   body.dark .btn.check{background:#4b4a6b}
   body.dark .btn.ghost{background:#20212e}
@@ -325,6 +325,9 @@
   body.dark .feedback.good{color:#7fd07f}
   body.dark .feedback.bad{color:#ec9090}
   body.dark .bonustag{background:#33344a;color:#cfd0e8}
+  body.dark .reviewbar.show{background:#3a3320;border-color:#6a5a2a;color:#e9d39a}
+  body.dark .reviewbar button{background:#2a2b3c;border-color:#6a5a2a;color:#e9d39a}
+  body.dark .flash{background:#2f3043}
 </style>
 </head>
 <body>
@@ -936,7 +939,7 @@ function render(){
   const reveal=(S.mode==='sowiso'&&rec)||S.phase==='submitted';
   // dots
   const sec=EXAM[q._s];const dots=document.getElementById('dots');dots.innerHTML='';
-  sec.items.forEach(it=>{const d=document.createElement('div');d.className='d '+dotClass(it.id);d.title='Q'+it.id;d.style.cursor='pointer';d.onclick=()=>{capture();cur=FLAT.indexOf(it);render();};dots.appendChild(d);});
+  sec.items.forEach(it=>{const d=document.createElement('div');d.className='d '+dotClass(it.id);d.title='Q'+it.id;d.style.cursor='pointer';d.onclick=()=>{capture();reviewFilter=null;cur=FLAT.indexOf(it);render();};dots.appendChild(d);});
   // mastery toast (clean first-try correct only)
   const toast=document.getElementById('toast');
   if(S.mode==='sowiso'&&S.phase!=='submitted'&&rec&&rec.status==='correct'&&(rec.attempts||1)<=1&&!rec.peeked){toast.classList.add('show');document.getElementById('toastTxt').textContent='You already master '+q.id.toUpperCase();}
@@ -1056,7 +1059,7 @@ function renderSidebar(){
   document.getElementById('handinBtn').style.display = S.phase==='submitted' ? 'none' : 'block';
   const nav=document.getElementById('nav');nav.innerHTML='';
   EXAM.forEach(s=>{const h=document.createElement('div');h.className='secttl';h.textContent=s.title;nav.appendChild(h);
-    s.items.forEach(q=>{const idx=FLAT.indexOf(q);const it=document.createElement('div');it.className='navitem'+(idx===cur?' active':'');it.onclick=()=>{capture();cur=idx;render();toggleDrawer(false);};it.innerHTML=`<span class="dot ${dotClass(q.id)}"></span><span>Q${q.id.toUpperCase()}</span>${S.flags[q.id]?'<span class="navflag">&#9873;</span>':''}<span class="pts">${q.pts} pt</span>`;nav.appendChild(it);});
+    s.items.forEach(q=>{const idx=FLAT.indexOf(q);const it=document.createElement('div');it.className='navitem'+(idx===cur?' active':'');it.onclick=()=>{capture();reviewFilter=null;cur=idx;render();toggleDrawer(false);};it.innerHTML=`<span class="dot ${dotClass(q.id)}"></span><span>Q${q.id.toUpperCase()}</span>${S.flags[q.id]?'<span class="navflag">&#9873;</span>':''}<span class="pts">${q.pts} pt</span>`;nav.appendChild(it);});
   });
 }
 function renderScore(){
