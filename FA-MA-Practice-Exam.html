@@ -202,6 +202,10 @@
     .settingsPanel{top:54px;right:8px;width:min(300px,92vw)}
   }
   /* mode + timer + handin */
+  .paperpanel{display:flex;align-items:center;gap:6px;margin:2px 4px 8px}
+  .paperlbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .paperbtn{flex:1;border:1.5px solid #d8d8ea;background:#fff;border-radius:10px;padding:7px 4px;font-size:13px;cursor:pointer;color:var(--ink);font-weight:700}
+  .paperbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
   .modepanel{display:flex;gap:6px;margin:2px 4px 8px}
   .modebtn{flex:1;border:1.5px solid #d8d8ea;background:#fff;border-radius:10px;padding:8px 4px;font-size:13px;cursor:pointer;color:var(--ink)}
   .modebtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -297,6 +301,7 @@
   body.dark .ninput,body.dark .amt{color:#e7e7f2;border-bottom-color:#4a4b66}
   body.dark .selacct{background:#262737;color:#e7e7f2;border-color:#3a3b52}
   body.dark .score,body.dark .timerbox{background:#20212e;border-color:#2c2d40}
+  body.dark .paperbtn{background:#262737;border-color:#3a3b52;color:#b9b9d4}
   body.dark .modebtn{background:#262737;border-color:#3a3b52;color:#b9b9d4}
   body.dark .modebtn.active{background:#f0f0f6;border-color:#f0f0f6;color:#20212e}
   body.dark .tbtn{background:#2a2b3c;border-color:#3a3b52;color:#e7e7f2}
@@ -351,7 +356,12 @@
   <div id="drawerOverlay" onclick="toggleDrawer(false)"></div>
   <aside id="sidebar">
     <h1>FA / MA — Practice Exam</h1>
-    <div class="sub">9 questions · timed 2:00:00</div>
+    <div class="sub" id="subline">timed 2:00:00</div>
+    <div class="paperpanel">
+      <span class="paperlbl">Paper</span>
+      <button class="paperbtn" id="paper2024" onclick="setPaper('2024')">2024</button>
+      <button class="paperbtn" id="paper2023" onclick="setPaper('2023')">2023</button>
+    </div>
     <div class="modepanel">
       <button class="modebtn" id="modeSowiso" onclick="setMode('sowiso')">SOWISO</button>
       <button class="modebtn" id="modeExam" onclick="setMode('exam')">Exam</button>
@@ -497,7 +507,7 @@ const CTX_TITAN = `<h4>Case — Titan Corporation (Overhead variances, absorptio
 <p>Opening finished goods = 1,000 units; opening direct materials = 0; no WIP. Absorption costing.</p>`;
 
 /* ===================== EXAM DATA ===================== */
-const EXAM = [
+const EXAM_2024 = [
 { title:"FA — Equity", items:[
   { id:"1a", pts:1.0, type:"mc", context:CTX_EQUITY,
     prompt:`<p class="instr">How many outstanding ordinary shares does the company have on January 1, 2022?</p>`,
@@ -869,24 +879,213 @@ const EXAM = [
 ]},
 ];
 
+/* ===================== 2023 PAPER ===================== */
+const C23_BUFFETT=`<h4>Case — Buffett Inc. (2022)</h4>
+<p>&bull; Net income 2022 = <b>&euro;4 million</b>.<br>
+&bull; 5% convertible debt issued start of 2022: two-year term, face value <b>&euro;10 million</b> (= total proceeds). Market rate on similar non-convertible bonds = <b>8%</b>. Net interest expense on these bonds = &euro;757,000 in 2022. Convertible into <b>500,000</b> regular shares.<br>
+&bull; April 1, 2022: issued <b>500,000</b> 2% <b>non-cumulative</b> convertible preference shares, total proceeds &euro;10 million; each converts to 1 regular share.<br>
+&bull; No dividends in 2022. <b>2.5 million</b> regular shares outstanding all year. Par value &euro;1 for all shares.</p>`;
+const C23_DAHLIA=`<h4>Case — Dahlia Corporation (Tax, 2022)</h4>
+<p>1. Taxable income 2022 = <b>&euro;340,000</b>; profitable in future.<br>
+2. Depreciation (financial / tax): 2022 20,000 / 30,000; 2023 20,000 / 30,000; 2024 20,000 / 15,000; 2025 20,000 / 5,000.<br>
+3. A lawsuit provision lowers financial income before tax by <b>&euro;40,000</b> in 2022; deductible for tax only in 2023 &amp; 2024 (&euro;20,000/yr).<br>
+4. Tax rate <b>25%</b> for 2022, <b>20%</b> thereafter. 5. Deferred tax balances zero on Jan 1, 2022.</p>`;
+const C23_COOL=`<h4>Case — Coolgreen BV (Revenue recognition, 2023)</h4>
+<p>Coolgreen sells, installs and maintains built-in fridges. Prices: fridge <b>&euro;900</b>; fridge + installation <b>&euro;975</b>; fridge + 2 years' maintenance <b>&euro;1,100</b>; fridge + installation + 2 years' maintenance (package) <b>&euro;1,150</b>. Installation &amp; maintenance are priced to market and can be done by other parties.</p>
+<p>A customer buys a fridge with installation and maintenance. Delivery &amp; installation on <b>July 1, 2023</b>; customer pays the &euro;1,150 on Aug 1.</p>`;
+const C23_TAKE=`<h4>Case — Takeaway.com (high-low)</h4>
+<table class="data"><tr><th class="num">Miles</th><th class="num">Total cost (EUR)</th></tr>
+<tr><td class="num">1,000</td><td class="num">22,000</td></tr><tr><td class="num">3,000</td><td class="num">44,500</td></tr><tr><td class="num">2,000</td><td class="num">32,600</td></tr><tr><td class="num">2,500</td><td class="num">35,000</td></tr><tr><td class="num">5,000</td><td class="num">42,500</td></tr></table>
+<p>A stepped increase in fixed costs of <b>&euro;500</b> occurs when miles reach 3,000. Round to the nearest integer.</p>`;
+const C23_ARC=`<h4>Case — ARC Inc. (special order)</h4>
+<p>In May, ARC receives a special order from XYZ to produce &amp; sell 10,000 units of product A at <b>15 EUR</b>/unit (normal selling price 18 EUR). Cost of producing one A: direct materials 3.5, direct labour 3.7, overhead 8.0. 40% of overhead is variable; fixed overhead cannot be avoided in May. Capacity = 15,000 units of A; current production = 5,000. ARC can use idle capacity to make and sell a different product B.</p>`;
+const C23_ESTANCIA=`<h4>Case — Estancia Inc. (Divisional performance, 2023)</h4>
+<p>Wine division manager evaluated on <b>ROI</b>; frozen food manager on <b>RI</b>. Required rate of return = <b>12%</b>. Budgeted 2023:</p>
+<table class="data"><tr><th></th><th class="num">Wine</th><th class="num">Frozen food</th></tr>
+<tr><td>Current assets</td><td class="num">25,000,000</td><td class="num">10,000,000</td></tr>
+<tr><td>Long-term assets</td><td class="num">45,000,000</td><td class="num">50,000,000</td></tr>
+<tr><td>Revenues</td><td class="num">12,000,000</td><td class="num">15,000,000</td></tr>
+<tr><td>Variable costs</td><td class="num">2,000,000</td><td class="num">2,500,000</td></tr>
+<tr><td>Fixed costs</td><td class="num">200,000</td><td class="num">500,000</td></tr></table>`;
+
+const EXAM_2023 = [
+{ title:"FA — Equity", items:[
+  { id:"1b", pts:2.0, type:"mc",
+    prompt:`<p class="instr">What is the correct journal entry for the announcement of a share (stock) dividend?</p>`,
+    options:["Debit share dividend distributable, credit cash.","Debit retained earnings, credit share dividend distributable.","Debit share premium, credit share capital.","Debit share dividend distributable, credit share capital."],
+    answer:1,
+    solution:`<p>A share dividend declaration moves value out of retained earnings into a share-dividend-distributable account (equity), with no cash: <b>Dr Retained earnings, Cr Share dividend distributable.</b></p>` },
+  { id:"1c", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Which statement about share dividends and share splits is correct?</p>`,
+    options:["Share splits decrease the liquidity of a company's shares.","Both share dividends and share splits increase the number of shares.","Both share dividends and share splits increase equity.","Payment of cash and share dividends increase total assets."],
+    answer:1,
+    solution:`<p><b>Both increase the number of shares.</b> Splits actually <i>increase</i> liquidity; neither a share dividend nor a split increases total equity; dividends don't increase assets.</p>` },
+]},
+{ title:"FA — Dilutive Securities / EPS", items:[
+  { id:"2d", pts:8.0, type:"numeric", context:C23_BUFFETT,
+    prompt:`<p class="instr">Calculate basic and diluted EPS. Round to two decimals.</p>`,
+    fields:[{label:"Basic EPS",pre:"€",value:1.60,tol:0.02},{label:"Diluted EPS",pre:"€",value:1.39,tol:0.02}],
+    solution:`<p><b>Basic EPS</b> = 4,000,000 &divide; 2,500,000 = <b>€1.60</b> (no preference dividend — non-cumulative, none declared).</p>
+    <p><b>Incremental effects:</b> convertible bonds: numerator +757,000 (net), shares +500,000 &rarr; 757,000/500,000 = 1.51. Convertible preference (issued Apr 1): no dividend &rarr; numerator +0, shares +9/12&times;500,000 = 375,000 &rarr; incremental 0.</p>
+    <p><b>Diluted EPS:</b> add CPS first (0 &lt; 1.60, dilutive): (4,000,000 + 0)/(2,500,000 + 375,000) = <b>1.39</b>. Bonds next: 1.51 &gt; 1.39 &rarr; anti-dilutive, stop. <b>Diluted EPS = €1.39.</b></p>` },
+]},
+{ title:"FA — Tax", items:[
+  { id:"3a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Why do tax expense and taxes payable often differ?</p>`,
+    options:["Companies use different tax rates for tax and financial statements (statutory vs. effective).","The rules for tax and financial statements are partially based on different accounting principles (e.g., cash vs. accrual).","Total tax expense is based on cash receipts, while taxes payable use accrual accounting.","Tax expense includes the direct costs the revenue authority incurs for taxing companies."],
+    answer:1,
+    solution:`<p>Differences arise from <b>different accounting principles</b> for book vs. tax (timing differences), creating deferred taxes.</p>` },
+  { id:"3b", pts:2.0, type:"mc", uncertain:true,
+    prompt:`<p class="instr">Which statement about accounting for net operating losses is correct?</p>`,
+    options:["If a company doesn't expect future profit, it forgoes all rights to carry a loss forward should it become profitable.","A company may freely choose the order in which it carries losses back or forward to specific years.","Carrying losses backward increases tax refund receivables on the balance sheet.","Carrying losses forward leads to deferred tax liabilities."],
+    answer:2,
+    solution:`<p>A loss <b>carryback</b> recovers tax already paid &rarr; a <b>tax refund receivable</b>. (Carryforward creates a deferred tax <i>asset</i>, not a liability; the order is set by rules, not free choice.)</p>
+    <p class="warn">&#9888; The grade for this MC wasn't visible in the scan — reasoned answer; verify.</p>` },
+  { id:"3c", pts:3.0, type:"numeric", context:C23_DAHLIA,
+    prompt:`<p class="instr">What is financial income before tax for 2022?</p>`,
+    fields:[{label:"Financial income before tax",pre:"€",value:310000,tol:1}],
+    solution:`<p>Start from taxable income 340,000. Financial depreciation is €10,000 lower than tax (20k vs 30k) &rarr; +10,000. Lawsuit provision €40,000 is in financial income but not yet deductible for tax &rarr; &minus;40,000. <b>340,000 + 10,000 &minus; 40,000 = €310,000.</b></p>` },
+  { id:"3d", pts:2.0, type:"numeric", context:C23_DAHLIA,
+    prompt:`<p class="instr">Calculate the current portion of income tax expense for 2022.</p>`,
+    fields:[{label:"Current income tax",pre:"€",value:85000,tol:1}],
+    solution:`<p>Current tax = taxable income &times; current rate = 340,000 &times; 25% = <b>€85,000.</b></p>` },
+  { id:"3e", pts:4.0, type:"numeric", context:C23_DAHLIA,
+    prompt:`<p class="instr">What are the ending balances of deferred tax assets (DTA) and deferred tax liabilities (DTL) in 2022?</p>`,
+    fields:[{label:"Ending DTA",pre:"€",value:8000,tol:1},{label:"Ending DTL",pre:"€",value:2000,tol:1}],
+    solution:`<p>Accelerated tax depreciation &rarr; future taxable amount &rarr; <b>DTL = 10,000 &times; 20% = €2,000.</b><br>
+    Lawsuit costs deductible later &rarr; future deductible amount &rarr; <b>DTA = 40,000 &times; 20% = €8,000.</b> (Future rate 20%; opening balances zero.)</p>` },
+  { id:"3f", pts:1.0, type:"mc", context:C23_DAHLIA,
+    prompt:`<p class="instr">How do you calculate the total income tax expense based on d and e?</p>`,
+    options:["Current portion of income tax + change in DTL − change in DTA","Current portion of income tax − change in DTL − change in DTA","Current portion of income tax − change in DTL + change in DTA","Current portion of income tax + change in DTL + change in DTA"],
+    answer:0,
+    solution:`<p>Income tax expense = current tax + increase in DTL − increase in DTA.</p>` },
+  { id:"3g", pts:2.0, type:"mc", context:C23_DAHLIA,
+    prompt:`<p class="instr">What is the change in DTA and DTL in 2023?</p>`,
+    options:["DTA: 4,000 credit. DTL: 4,000 credit.","DTA: 2,000 debit. DTL: 4,000 credit.","DTA: 4,000 credit. DTL: 2,000 credit.","DTA: 4,000 debit. DTL: 4,000 credit."],
+    answer:2,
+    solution:`<p>2023: more accelerated depreciation (30k vs 20k) &rarr; DTL rises 10,000&times;20% = <b>2,000 credit</b>. Lawsuit cost of 20,000 is realised &rarr; DTA falls 20,000&times;20% = <b>4,000 credit</b>. So DTA 4,000 credit, DTL 2,000 credit.</p>` },
+]},
+{ title:"FA — Revenue Recognition", items:[
+  { id:"4a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">When would you <u>not</u> apply IFRS 15 to a contract?</p>`,
+    options:["When the contract has multiple performance obligations without a standalone selling price.","When the contract isn't in writing.","When payment is at least a year away and the contract has a significant financing component.","When it's probable that the agreed transaction price won't be collected."],
+    answer:3,
+    solution:`<p>IFRS 15 requires collection to be <b>probable</b>; if it isn't, the contract doesn't qualify (Step 1 criteria fail).</p>` },
+  { id:"4b", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Which statement about the steps of IFRS 15 is <u>incorrect</u>?</p>`,
+    options:["There are multiple performance obligations if the promises to deliver goods/services are distinct and not interdependent.","The total transaction price is preferably allocated to multiple performance obligations using the residual approach.","Revenue is recognized if a customer can direct the use of, and obtain substantially all the benefits from, the asset/service.","Variable consideration is included only if it's reasonably assured of being received."],
+    answer:1,
+    solution:`<p>The transaction price is allocated on <b>relative standalone selling prices</b>, not the residual approach (the residual method is only an exception). So statement 2 is incorrect.</p>` },
+  { id:"4c", pts:1.0, type:"numeric", context:C23_COOL,
+    prompt:`<p class="instr">How many performance obligations does this agreement contain?</p>`,
+    fields:[{label:"Performance obligations",value:3,tol:0}],
+    solution:`<p><b>3</b> — fridge, installation, and maintenance (all distinct).</p>` },
+  { id:"4d", pts:3.0, type:"numeric", context:C23_COOL,
+    prompt:`<p class="instr">How much revenue is allocated to the fridge? Round to the nearest integer.</p>`,
+    fields:[{label:"Fridge revenue",pre:"€",value:881,tol:2}],
+    solution:`<p>Standalone values: fridge 900, installation 75 (975−900), maintenance 200 (1,100−900); total 1,175. Fridge = 900/1,175 &times; 1,150 = <b>€881.</b></p>` },
+  { id:"4e", pts:3.0, type:"numeric", context:C23_COOL,
+    prompt:`<p class="instr">How much revenue is recognized at the end of 2023 on this entire transaction? Round to the nearest integer.</p>`,
+    fields:[{label:"Revenue recognized in 2023",pre:"€",value:1003,tol:2}],
+    solution:`<p>Fridge (881) and installation (73) are fully recognised at delivery. Maintenance (196) is over 2 years (24 months); 6 months fall in 2023 &rarr; 196&times;6/24 = 49. Total = 881 + 73 + 49 = <b>€1,003.</b></p>` },
+  { id:"4f", pts:2.0, type:"mc", context:C23_COOL, uncertain:true,
+    prompt:`<p class="instr">Which statement is correct?</p>`,
+    options:["Coolgreen recognizes revenue over time because installation is a separate performance obligation.","Coolgreen recognizes revenue at the moment of payment by the customer.","Coolgreen recognizes revenue at different points in time due to the nature of this agreement.","Coolgreen recognizes revenue over time because the customer pays after delivery."],
+    answer:2,
+    solution:`<p>Fridge and installation are recognised at delivery (a point in time), maintenance over time &rarr; revenue is recognised at <b>different points in time</b>. Timing isn't driven by payment.</p>
+    <p class="warn">&#9888; The grade wasn't visible in the scan — reasoned answer; verify.</p>` },
+]},
+{ title:"MA — Joint Costs (Ch 6)", items:[
+  { id:"5a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Which method for allocating joint costs assumes the joint cost per unit is similar for each joint product?</p>`,
+    options:["Sales value at split-off point method","Constant gross profit percentage method","Net realizable value method","Physical measures method"],
+    answer:3,
+    solution:`<p>The <b>physical measures method</b> allocates on physical units, implicitly assuming the same cost per unit across joint products.</p>` },
+]},
+{ title:"MA — Cost Estimation (Ch 24)", items:[
+  { id:"6a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">What does the relevant range refer to?</p>`,
+    options:["The range of costs incurred in the production process.","The range of products for which costs are estimated.","The range of activity within which a company could theoretically operate.","The range of activity where the assumptions underlying a linear cost function hold true."],
+    answer:3,
+    solution:`<p>The <b>relevant range</b> is the activity band over which the linear cost-function assumptions are valid.</p>` },
+  { id:"6b", pts:8.0, type:"numeric", context:C23_TAKE,
+    prompt:`<p class="instr">Complete the cost function to calculate total cost at 2,200 miles (a level <i>before</i> the step increase). Give the intercept and slope.</p>`,
+    fields:[{label:"Intercept (fixed)",pre:"€",value:17000,tol:1},{label:"Slope (variable per mile)",pre:"€",value:5,tol:0.01}],
+    solution:`<p>High/low by <b>activity</b>: HIGH (5,000; 42,500), LOW (1,000; 22,000). Remove the €500 step (present at the 5,000 point): slope = (42,500 − 500 − 22,000)/(5,000 − 1,000) = 20,000/4,000 = <b>5</b>. Intercept = 22,000 − 1,000&times;5 = <b>17,000</b>.</p>
+    <p>So at 2,200 miles (before the step): 17,000 + 5&times;2,200 = €28,000.</p>` },
+]},
+{ title:"MA — Decision-Making (Ch 9)", items:[
+  { id:"7a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Which costs are <u>not</u> relevant for discontinuation decisions?</p>`,
+    options:["joint costs and opportunity costs","sunk costs and fixed costs","joint costs and sunk costs","opportunity costs and fixed costs"],
+    answer:2,
+    solution:`<p><b>Joint costs and sunk costs.</b> Sunk costs are never relevant; joint costs are not relevant to a discontinuation decision (the other joint products still incur them). Opportunity costs are always relevant, and fixed costs can be relevant (avoidable ones).</p>` },
+  { id:"7b", pts:3.0, type:"mc", context:C23_ARC, uncertain:true,
+    prompt:`<p class="instr">Based on all the information, what should ARC Inc. do about XYZ's offer?</p>`,
+    options:["ARC should reject the special offer.","There is not enough information to make this decision.","ARC should accept the special offer.","ARC is indifferent between accepting and rejecting."],
+    answer:1,
+    solution:`<p><b>Not enough information.</b> ARC can use the freed/idle capacity to make and sell product B, so the decision needs the revenue and costs of that best alternative use (opportunity cost) — which isn't given.</p>
+    <p class="warn">&#9888; The exact grade wasn't visible; the model answer points to the opportunity-cost (product B) information being needed.</p>` },
+]},
+{ title:"MA — Variances (Ch 17 & 18)", items:[
+  { id:"8d", pts:2.0, type:"numeric",
+    prompt:`<p class="instr">In August, actual fixed overhead was €20,000 and the fixed overhead expenditure variance was adverse and equal to €3,500. How much was budgeted fixed overhead for August?</p>`,
+    fields:[{label:"Budgeted fixed overhead",pre:"€",value:16500,tol:1}],
+    solution:`<p>Expenditure variance = budgeted − actual fixed overhead. Adverse means budgeted &lt; actual, so budgeted = 20,000 − 3,500 = <b>€16,500.</b></p>` },
+]},
+{ title:"MA — Divisional Performance (Ch 18–19)", items:[
+  { id:"9a", pts:2.0, type:"mc", uncertain:true,
+    prompt:`<p class="instr">Which is correct? (1) Having managers participate in budgeting reduces the likelihood of budget slack. (2) A moderate discrepancy between actual and budgeted performance can motivate managers.</p>`,
+    options:["statement 1 is correct, statement 2 is incorrect","both statements are correct","statement 1 is incorrect, statement 2 is correct","both statements are incorrect"],
+    answer:2,
+    solution:`<p>Participation tends to <i>increase</i> the opportunity for budget slack, so statement 1 is incorrect. A moderate (challenging but attainable) target is motivating, so statement 2 is correct.</p>
+    <p class="warn">&#9888; The grade wasn't visible in the scan — reasoned answer; verify.</p>` },
+  { id:"9b", pts:2.0, type:"numeric", context:C23_ESTANCIA,
+    prompt:`<p class="instr">What is the current ROI for the wine division? (Round to the nearest integer %.)</p>`,
+    fields:[{label:"ROI",suf:"%",value:14,tol:0.5}],
+    solution:`<p>Operating profit = 12,000,000 − 2,000,000 − 200,000 = 9,800,000. Total assets = 25,000,000 + 45,000,000 = 70,000,000. ROI = 9,800,000/70,000,000 = <b>14%.</b></p>` },
+  { id:"9c", pts:2.0, type:"numeric", context:C23_ESTANCIA,
+    prompt:`<p class="instr">What is the current residual income (RI) for the frozen food division?</p>`,
+    fields:[{label:"Residual income",pre:"€",value:4800000,tol:1}],
+    solution:`<p>Operating profit = 15,000,000 − 2,500,000 − 500,000 = 12,000,000. Total assets = 10,000,000 + 50,000,000 = 60,000,000. RI = 12,000,000 − 12% &times; 60,000,000 = 12,000,000 − 7,200,000 = <b>€4,800,000.</b></p>` },
+  { id:"9d", pts:3.0, type:"mc", context:C23_ESTANCIA,
+    prompt:`<p class="instr">An expansion needs each division to invest €30,000,000, with expected additional profit €4,000,000 (wine) and €5,000,000 (frozen food). Which divisional manager is motivated to expand?</p>`,
+    options:["(1) wine NOT motivated, (2) frozen food motivated","both managers NOT motivated","(1) wine motivated, (2) frozen food NOT motivated","both managers motivated"],
+    answer:0,
+    solution:`<p>Wine (ROI): new project ROI = 4,000,000/30,000,000 = 13.3% &lt; current 14% &rarr; lowers ROI &rarr; <b>not motivated</b>. Frozen food (RI): new RI = 5,000,000 − 12%&times;30,000,000 = 5,000,000 − 3,600,000 = +1,400,000 &gt; 0 &rarr; <b>motivated</b>.</p>` },
+]},
+{ title:"MA — Transfer Pricing (Ch 20)", items:[
+  { id:"10a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Which statement about transfer pricing is correct?</p>`,
+    options:["The market-based method compares the transaction to an internal transaction.","A transfer pricing system can be used to determine the expenses in a company.","A negotiated transfer price is a cost-based or market-based transfer price.","When a transfer takes place between divisions, the profit determination of the divisions changes."],
+    answer:3,
+    solution:`<p>Internal transfers shift profit between divisions (each division's measured profit changes), even though group profit is unaffected. The market-based method compares to an <i>external</i> market price; a negotiated price is neither purely cost- nor market-based.</p>` },
+]},
+];
+
+const PAPERS = {
+  '2024': { label:'2024', data:EXAM_2024 },
+  '2023': { label:'2023', data:EXAM_2023 }
+};
+
 /* ===================== STATE ===================== */
 const TOTAL_MS = 2*60*60*1000; // 2 hours
-const FLAT=[]; EXAM.forEach((s,si)=>s.items.forEach((q)=>{q._s=si;q._sectionTitle=s.title;q._bonus=/bonus/i.test(s.title);FLAT.push(q);}));
-const TOTAL=FLAT.length;
-const MAXPTS=FLAT.filter(q=>!q._bonus).reduce((a,q)=>a+q.pts,0); // gradeable max (bonus excluded)
-let cur=0;
-
 const SAVED = JSON.parse(localStorage.getItem('famaState')||'{}');
 const DEFAULT_SETTINGS={dark:false,shuffle:false,timerWarn:true};
 function blankMode(){return {answers:{},checked:{},results:null,phase:'answering',order:{},flags:{}};}
-const S = {mode:SAVED.mode||'sowiso', settings:Object.assign({},DEFAULT_SETTINGS,SAVED.settings||{}), stash:SAVED.stash||{}};
-function loadMode(m){const st=Object.assign(blankMode(),S.stash[m]||{});S.answers=st.answers;S.checked=st.checked;S.results=st.results;S.phase=st.phase;S.order=st.order;S.flags=st.flags;}
+let EXAM, FLAT, TOTAL, MAXPTS, PAPER;
+function loadPaper(p){PAPER=p;EXAM=PAPERS[p].data;FLAT=[];EXAM.forEach((s,si)=>s.items.forEach((q)=>{q._s=si;q._sectionTitle=s.title;q._bonus=/bonus/i.test(s.title);FLAT.push(q);}));TOTAL=FLAT.length;MAXPTS=FLAT.filter(q=>!q._bonus).reduce((a,q)=>a+q.pts,0);}
+let cur=0;
+const S = {paper:(SAVED.paper&&PAPERS[SAVED.paper])?SAVED.paper:'2024', mode:SAVED.mode||'sowiso', settings:Object.assign({},DEFAULT_SETTINGS,SAVED.settings||{}), stash:SAVED.stash||{}};
+loadPaper(S.paper);
+function curStash(){S.stash[PAPER]=S.stash[PAPER]||{};return S.stash[PAPER];}
+function loadMode(m){const st=Object.assign(blankMode(),curStash()[m]||{});S.answers=st.answers;S.checked=st.checked;S.results=st.results;S.phase=st.phase;S.order=st.order;S.flags=st.flags;}
 loadMode(S.mode);
 let reviewFilter=null;
 const T = Object.assign({elapsedMs:0,running:false,lastStart:0,hidden:false,w15:false,w5:false}, JSON.parse(localStorage.getItem('famaTimer')||'{}'));
 let timerInt=null;
 
-function saveState(){S.stash[S.mode]={answers:S.answers,checked:S.checked,results:S.results,phase:S.phase,order:S.order,flags:S.flags};localStorage.setItem('famaState',JSON.stringify({mode:S.mode,settings:S.settings,stash:S.stash}));}
+function saveState(){curStash()[S.mode]={answers:S.answers,checked:S.checked,results:S.results,phase:S.phase,order:S.order,flags:S.flags};localStorage.setItem('famaState',JSON.stringify({paper:PAPER,mode:S.mode,settings:S.settings,stash:S.stash}));}
 function saveTimer(){localStorage.setItem('famaTimer',JSON.stringify({elapsedMs:T.elapsedMs,running:T.running,lastStart:T.lastStart,hidden:T.hidden,w15:T.w15,w5:T.w5}));}
 function num(v){const n=parseFloat(String(v).replace(/[,\s€$£%]/g,''));return isNaN(n)?null:n;}
 function esc(s){return String(s==null?'':s).replace(/"/g,'&quot;');}
@@ -1053,6 +1252,9 @@ function resultLine(q){const r=S.results.per[q.id];const lab={correct:'&#10003; 
 
 /* ===================== SIDEBAR ===================== */
 function renderSidebar(){
+  document.getElementById('paper2024').classList.toggle('active',PAPER==='2024');
+  document.getElementById('paper2023').classList.toggle('active',PAPER==='2023');
+  document.getElementById('subline').textContent=PAPERS[PAPER].label+' paper · '+TOTAL+' questions';
   document.getElementById('modeSowiso').classList.toggle('active',S.mode==='sowiso');
   document.getElementById('modeExam').classList.toggle('active',S.mode==='exam');
   document.getElementById('modeHint').innerHTML = S.phase==='submitted' ? 'Reviewing your handed-in answers.' : (S.mode==='sowiso'?'Practice: Check &amp; Solution after each question.':'Exam: no feedback until you hand in.');
@@ -1122,7 +1324,8 @@ function go(d){capture();
   render();window.scrollTo(0,0);document.getElementById('main').scrollTo(0,0);}
 
 /* ===================== MODE + HAND-IN ===================== */
-function setMode(m){if(m===S.mode)return;capture();S.stash[S.mode]={answers:S.answers,checked:S.checked,results:S.results,phase:S.phase,order:S.order,flags:S.flags};S.mode=m;loadMode(m);reviewFilter=null;cur=0;saveState();render();}
+function setMode(m){if(m===S.mode)return;capture();saveState();S.mode=m;loadMode(m);reviewFilter=null;cur=0;saveState();render();}
+function setPaper(p){if(p===PAPER)return;capture();saveState();loadPaper(p);S.paper=p;loadMode(S.mode);reviewFilter=null;cur=0;saveState();render();}
 function handIn(){toggleDrawer(false);capture();
   const unans=FLAT.filter(q=>!isAnswered(q.id)).map(q=>q.id.toUpperCase());
   const flagged=FLAT.filter(q=>S.flags[q.id]).map(q=>q.id.toUpperCase());
