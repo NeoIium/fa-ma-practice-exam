@@ -204,8 +204,7 @@
   /* mode + timer + handin */
   .paperpanel{display:flex;align-items:center;gap:6px;margin:2px 4px 8px}
   .paperlbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-  .paperbtn{flex:1;border:1.5px solid #d8d8ea;background:#fff;border-radius:10px;padding:7px 4px;font-size:13px;cursor:pointer;color:var(--ink);font-weight:700}
-  .paperbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .papersel{flex:1;border:1.5px solid var(--accent);background:#fff;border-radius:10px;padding:8px 10px;font-size:13px;font-weight:700;color:var(--accent);cursor:pointer}
   .modepanel{display:flex;gap:6px;margin:2px 4px 8px}
   .modebtn{flex:1;border:1.5px solid #d8d8ea;background:#fff;border-radius:10px;padding:8px 4px;font-size:13px;cursor:pointer;color:var(--ink)}
   .modebtn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -301,7 +300,7 @@
   body.dark .ninput,body.dark .amt{color:#e7e7f2;border-bottom-color:#4a4b66}
   body.dark .selacct{background:#262737;color:#e7e7f2;border-color:#3a3b52}
   body.dark .score,body.dark .timerbox{background:#20212e;border-color:#2c2d40}
-  body.dark .paperbtn{background:#262737;border-color:#3a3b52;color:#b9b9d4}
+  body.dark .papersel{background:#262737;border-color:#b81f63;color:#f2a8c6}
   body.dark .modebtn{background:#262737;border-color:#3a3b52;color:#b9b9d4}
   body.dark .modebtn.active{background:#f0f0f6;border-color:#f0f0f6;color:#20212e}
   body.dark .tbtn{background:#2a2b3c;border-color:#3a3b52;color:#e7e7f2}
@@ -359,8 +358,7 @@
     <div class="sub" id="subline">timed 2:00:00</div>
     <div class="paperpanel">
       <span class="paperlbl">Paper</span>
-      <button class="paperbtn" id="paper2024" onclick="setPaper('2024')">2024</button>
-      <button class="paperbtn" id="paper2023" onclick="setPaper('2023')">2023</button>
+      <select class="papersel" id="paperSel" onchange="setPaper(this.value)"></select>
     </div>
     <div class="modepanel">
       <button class="modebtn" id="modeSowiso" onclick="setMode('sowiso')">SOWISO</button>
@@ -880,192 +878,611 @@ const EXAM_2024 = [
 ];
 
 /* ===================== 2023 PAPER ===================== */
+const C23_EQUITY=`<h4>Case — Equity (2022)</h4>
+<p class="warn">&#9888; The full case wording wasn&rsquo;t in the source; figures reconstructed from the official model answers &ndash; verify.</p>
+<p>Beginning 2022: share premium &euro;600m, retained earnings &euro;100m. <b>Net loss</b> 2022 = &euro;13m. In <b>August 2022</b> a &euro;45m dividend was announced (paid Sept): &euro;30m regular cash dividend (from retained earnings) + &euro;15m <b>liquidating</b> dividend (return of capital, from share premium). In <b>December 2022</b> a &euro;16m stock dividend was declared. ($/&euro; millions; par &euro;1.)</p>`;
 const C23_BUFFETT=`<h4>Case — Buffett Inc. (2022)</h4>
 <p>&bull; Net income 2022 = <b>&euro;4 million</b>.<br>
-&bull; 5% convertible debt issued start of 2022: two-year term, face value <b>&euro;10 million</b> (= total proceeds). Market rate on similar non-convertible bonds = <b>8%</b>. Net interest expense on these bonds = &euro;757,000 in 2022. Convertible into <b>500,000</b> regular shares.<br>
-&bull; April 1, 2022: issued <b>500,000</b> 2% <b>non-cumulative</b> convertible preference shares, total proceeds &euro;10 million; each converts to 1 regular share.<br>
-&bull; No dividends in 2022. <b>2.5 million</b> regular shares outstanding all year. Par value &euro;1 for all shares.</p>`;
+&bull; 5% convertible debt issued start 2022: two-year term, face value <b>&euro;10 million</b> (= proceeds). Market rate <b>8%</b>. Net interest expense &euro;757,000 in 2022. Converts to <b>500,000</b> regular shares.<br>
+&bull; April 1, 2022: issued <b>500,000</b> 2% <b>non-cumulative</b> convertible preference shares, total proceeds &euro;10m; each &rarr; 1 regular share.<br>
+&bull; No dividends in 2022. <b>2.5 million</b> regular shares all year. Par &euro;1 all shares.</p>`;
 const C23_DAHLIA=`<h4>Case — Dahlia Corporation (Tax, 2022)</h4>
-<p>1. Taxable income 2022 = <b>&euro;340,000</b>; profitable in future.<br>
-2. Depreciation (financial / tax): 2022 20,000 / 30,000; 2023 20,000 / 30,000; 2024 20,000 / 15,000; 2025 20,000 / 5,000.<br>
-3. A lawsuit provision lowers financial income before tax by <b>&euro;40,000</b> in 2022; deductible for tax only in 2023 &amp; 2024 (&euro;20,000/yr).<br>
-4. Tax rate <b>25%</b> for 2022, <b>20%</b> thereafter. 5. Deferred tax balances zero on Jan 1, 2022.</p>`;
+<p>1. Taxable income 2022 = <b>&euro;340,000</b>; profitable in future. 2. Depreciation (financial / tax): 2022 20,000 / 30,000; 2023 20,000 / 30,000; 2024 20,000 / 15,000; 2025 20,000 / 5,000.<br>
+3. A lawsuit provision lowers financial income before tax by <b>&euro;40,000</b> in 2022; deductible for tax only in 2023 &amp; 2024 (&euro;20,000/yr). 4. Tax rate <b>25%</b> (2022), <b>20%</b> thereafter. 5. Deferred tax balances zero on Jan 1, 2022.</p>`;
 const C23_COOL=`<h4>Case — Coolgreen BV (Revenue recognition, 2023)</h4>
-<p>Coolgreen sells, installs and maintains built-in fridges. Prices: fridge <b>&euro;900</b>; fridge + installation <b>&euro;975</b>; fridge + 2 years' maintenance <b>&euro;1,100</b>; fridge + installation + 2 years' maintenance (package) <b>&euro;1,150</b>. Installation &amp; maintenance are priced to market and can be done by other parties.</p>
-<p>A customer buys a fridge with installation and maintenance. Delivery &amp; installation on <b>July 1, 2023</b>; customer pays the &euro;1,150 on Aug 1.</p>`;
+<p>Sells, installs &amp; maintains fridges. Prices: fridge <b>&euro;900</b>; fridge + installation <b>&euro;975</b>; fridge + 2yr maintenance <b>&euro;1,100</b>; fridge + installation + 2yr maintenance (package) <b>&euro;1,150</b>. Installation &amp; maintenance priced to market; can be done by others.</p>
+<p>Customer buys fridge + installation + maintenance. Delivery &amp; installation <b>July 1, 2023</b>; pays &euro;1,150 on Aug 1.</p>`;
 const C23_TAKE=`<h4>Case — Takeaway.com (high-low)</h4>
 <table class="data"><tr><th class="num">Miles</th><th class="num">Total cost (EUR)</th></tr>
 <tr><td class="num">1,000</td><td class="num">22,000</td></tr><tr><td class="num">3,000</td><td class="num">44,500</td></tr><tr><td class="num">2,000</td><td class="num">32,600</td></tr><tr><td class="num">2,500</td><td class="num">35,000</td></tr><tr><td class="num">5,000</td><td class="num">42,500</td></tr></table>
-<p>A stepped increase in fixed costs of <b>&euro;500</b> occurs when miles reach 3,000. Round to the nearest integer.</p>`;
-const C23_ARC=`<h4>Case — ARC Inc. (special order)</h4>
-<p>In May, ARC receives a special order from XYZ to produce &amp; sell 10,000 units of product A at <b>15 EUR</b>/unit (normal selling price 18 EUR). Cost of producing one A: direct materials 3.5, direct labour 3.7, overhead 8.0. 40% of overhead is variable; fixed overhead cannot be avoided in May. Capacity = 15,000 units of A; current production = 5,000. ARC can use idle capacity to make and sell a different product B.</p>`;
+<p>Stepped increase in fixed costs of <b>&euro;500</b> when miles reach 3,000. Round to the nearest integer.</p>`;
+const C23_DIESEL=`<h4>Case — Joint costs: Diesel</h4>
+<p>Diesel can be sold at split-off (<b>4,000</b> units at &euro;120) or processed further and sold as <b>3,000</b> units at &euro;160, with further-processing costs of <b>&euro;60,000</b>.</p>`;
 const C23_ESTANCIA=`<h4>Case — Estancia Inc. (Divisional performance, 2023)</h4>
-<p>Wine division manager evaluated on <b>ROI</b>; frozen food manager on <b>RI</b>. Required rate of return = <b>12%</b>. Budgeted 2023:</p>
+<p>Wine manager evaluated on <b>ROI</b>, frozen food on <b>RI</b>. Required return <b>12%</b>. Budgeted 2023:</p>
 <table class="data"><tr><th></th><th class="num">Wine</th><th class="num">Frozen food</th></tr>
 <tr><td>Current assets</td><td class="num">25,000,000</td><td class="num">10,000,000</td></tr>
 <tr><td>Long-term assets</td><td class="num">45,000,000</td><td class="num">50,000,000</td></tr>
 <tr><td>Revenues</td><td class="num">12,000,000</td><td class="num">15,000,000</td></tr>
 <tr><td>Variable costs</td><td class="num">2,000,000</td><td class="num">2,500,000</td></tr>
 <tr><td>Fixed costs</td><td class="num">200,000</td><td class="num">500,000</td></tr></table>`;
+const C23_ABINBEV=`<h4>Case — AB InBev (transfer pricing)</h4>
+<p>Brewery &amp; Bottle divisions. Bottle makes beer bottles: variable cost &euro;4/bottle, fixed &euro;2.50/bottle; currently makes &amp; sells <b>44,000</b> bottles/yr (= full capacity) externally at <b>&euro;10</b>/bottle. For internal transfers, Bottle&rsquo;s variable cost falls by &euro;2/bottle. Brewery needs <b>8,000</b> bottles/yr, currently buying outside at <b>&euro;12</b>/bottle. What are the max &amp; min transfer prices under the general rule?</p>`;
+const C23_ARC=`<h4>Case — ARC Inc. (special order)</h4>
+<p>In May, ARC receives a special order from XYZ to produce &amp; sell <b>10,000</b> units of product A at <b>&euro;15</b>/unit (normal price &euro;18). Cost of one A: direct materials 3.5, direct labour 3.7, overhead 8.0. 40% of overhead is variable; fixed overhead can&rsquo;t be avoided in May. Capacity <b>15,000</b> units; current production <b>5,000</b>. ARC can use idle capacity to make &amp; sell a different product B.</p>`;
 
 const EXAM_2023 = [
 { title:"FA — Equity", items:[
+  { id:"1a", pts:3.0, type:"numeric", layout:"table", tableHead:["Account","Change ($m; − = decrease)"], context:C23_EQUITY,
+    prompt:`<p class="instr">Indicate how the August 2022 dividend announcement affected each account.</p><p class="note">Enter the change in $ millions; use a minus sign for a decrease, 0 for no change.</p>`,
+    fields:[{label:"Cash",value:0,tol:0},{label:"Share premium",value:-15,tol:0.5},{label:"Retained earnings",value:-30,tol:0.5}],
+    solution:`<p>Announcement: Dr Retained earnings 30, Dr Share premium 15 (liquidating part), Cr Dividends payable 45. <b>Cash: no change</b> (paid next month); <b>Share premium: −15</b>; <b>Retained earnings: −30</b>.</p>` },
   { id:"1b", pts:2.0, type:"mc",
     prompt:`<p class="instr">What is the correct journal entry for the announcement of a share (stock) dividend?</p>`,
     options:["Debit share dividend distributable, credit cash.","Debit retained earnings, credit share dividend distributable.","Debit share premium, credit share capital.","Debit share dividend distributable, credit share capital."],
-    answer:1,
-    solution:`<p>A share dividend declaration moves value out of retained earnings into a share-dividend-distributable account (equity), with no cash: <b>Dr Retained earnings, Cr Share dividend distributable.</b></p>` },
+    answer:1, solution:`<p>A stock dividend declaration moves value out of retained earnings: <b>Dr Retained earnings, Cr Share dividend distributable</b> (no cash).</p>` },
   { id:"1c", pts:2.0, type:"mc",
     prompt:`<p class="instr">Which statement about share dividends and share splits is correct?</p>`,
     options:["Share splits decrease the liquidity of a company's shares.","Both share dividends and share splits increase the number of shares.","Both share dividends and share splits increase equity.","Payment of cash and share dividends increase total assets."],
-    answer:1,
-    solution:`<p><b>Both increase the number of shares.</b> Splits actually <i>increase</i> liquidity; neither a share dividend nor a split increases total equity; dividends don't increase assets.</p>` },
+    answer:1, solution:`<p><b>Both increase the number of shares.</b> Splits increase liquidity; neither raises total equity; dividends don&rsquo;t raise assets.</p>` },
+  { id:"1d", pts:8.0, type:"numeric", context:C23_EQUITY,
+    prompt:`<p class="instr">Calculate the ending balances of share premium and retained earnings for 2022 ($ millions).</p>`,
+    fields:[{label:"Ending share premium",pre:"$",value:585,tol:1},{label:"Ending retained earnings",pre:"$",value:41,tol:1}],
+    solution:`<p>Share premium = 600 − 15 (liquidating dividend) = <b>585</b>.<br>Retained earnings = 100 − 13 (net loss) − 30 (cash dividend) − 16 (stock dividend) = <b>41</b>.</p>` },
 ]},
 { title:"FA — Dilutive Securities / EPS", items:[
+  { id:"2a", pts:4.0, type:"numeric", context:C23_BUFFETT, uncertain:true,
+    prompt:`<p class="instr">What is the value of the equity component of the convertible bonds upon issuance?</p>`,
+    fields:[{label:"Equity component",pre:"€",value:534979,tol:50}],
+    solution:`<p>Liability component = PV at 8% = 10m/1.08&sup2; + 500,000/1.08 + 500,000/1.08&sup2; = 9,465,021. Equity component = 10,000,000 − 9,465,021 = <b>€534,979</b>.</p>
+    <p class="warn">&#9888; The exam wording said &ldquo;convertible shares&rdquo;; it accepted full marks for either €534,979 (bonds) or €10,000,000 (the preference-share reading), and partial for 9,465,021.</p>` },
+  { id:"2b", pts:2.0, type:"mc", context:C23_BUFFETT,
+    prompt:`<p class="instr">Which of the following statements is correct?</p>`,
+    options:["When convertible bonds are issued, we debit cash and equity and credit liabilities.","Upon conversion of convertible bonds, we debit cash and liabilities, and credit equity.","When convertible preference shares are repurchased, we book a gain or loss as the difference between cash paid and the book value of the repurchased preference shares.","When convertible bonds are repurchased before maturity, we book a gain or loss on the difference between the book value and repurchase price of the liability component of the convertible bond."],
+    answer:3, solution:`<p>On early repurchase of a convertible bond, the gain/loss is on the <b>liability component</b> (book value vs repurchase price). Issuance credits equity (not debit); conversion has no cash; preference-share repurchase is an equity transaction (no P&amp;L).</p>` },
+  { id:"2c", pts:2.0, type:"mc", context:C23_BUFFETT,
+    prompt:`<p class="instr">Which element is part of the journal entry for conversion of all convertible preference shares?</p>`,
+    options:["Debit share premium − convertible preference shares for €9.5 million.","Credit share premium − convertible preference shares for €10 million.","Credit share capital (par value) − regular shares for €10 million.","Debit cash for €9 million."],
+    answer:0, solution:`<p>Book-value method: remove preference capital (500,000 × €1 = 0.5m) and its premium (10m − 0.5m = <b>9.5m, debited</b>); credit regular share capital 0.5m and regular premium 9.5m. No cash.</p>` },
   { id:"2d", pts:8.0, type:"numeric", context:C23_BUFFETT,
     prompt:`<p class="instr">Calculate basic and diluted EPS. Round to two decimals.</p>`,
     fields:[{label:"Basic EPS",pre:"€",value:1.60,tol:0.02},{label:"Diluted EPS",pre:"€",value:1.39,tol:0.02}],
-    solution:`<p><b>Basic EPS</b> = 4,000,000 &divide; 2,500,000 = <b>€1.60</b> (no preference dividend — non-cumulative, none declared).</p>
-    <p><b>Incremental effects:</b> convertible bonds: numerator +757,000 (net), shares +500,000 &rarr; 757,000/500,000 = 1.51. Convertible preference (issued Apr 1): no dividend &rarr; numerator +0, shares +9/12&times;500,000 = 375,000 &rarr; incremental 0.</p>
-    <p><b>Diluted EPS:</b> add CPS first (0 &lt; 1.60, dilutive): (4,000,000 + 0)/(2,500,000 + 375,000) = <b>1.39</b>. Bonds next: 1.51 &gt; 1.39 &rarr; anti-dilutive, stop. <b>Diluted EPS = €1.39.</b></p>` },
+    solution:`<p><b>Basic</b> = 4,000,000 / 2,500,000 = <b>€1.60</b> (no preference dividend). Incremental: bonds 757,000/500,000 = 1.51; CPS 0/(9/12·500,000=375,000) = 0.</p>
+    <p><b>Diluted:</b> add CPS first → 4,000,000/2,875,000 = 1.39. Bonds 1.51 &gt; 1.39 → anti-dilutive, stop. <b>Diluted = €1.39</b>.</p>` },
 ]},
 { title:"FA — Tax", items:[
   { id:"3a", pts:2.0, type:"mc",
     prompt:`<p class="instr">Why do tax expense and taxes payable often differ?</p>`,
-    options:["Companies use different tax rates for tax and financial statements (statutory vs. effective).","The rules for tax and financial statements are partially based on different accounting principles (e.g., cash vs. accrual).","Total tax expense is based on cash receipts, while taxes payable use accrual accounting.","Tax expense includes the direct costs the revenue authority incurs for taxing companies."],
-    answer:1,
-    solution:`<p>Differences arise from <b>different accounting principles</b> for book vs. tax (timing differences), creating deferred taxes.</p>` },
-  { id:"3b", pts:2.0, type:"mc", uncertain:true,
+    options:["Companies use different tax rates for tax and financial statements (statutory vs. effective).","The rules for tax and financial statements are partially based on different accounting principles (e.g., cash vs. accrual).","Total tax expense is based on cash receipts, while taxes payable uses accrual accounting.","Tax expense also includes the direct costs the revenue authority incurs for taxing companies."],
+    answer:1, solution:`<p>Different accounting principles for book vs. tax create timing differences (and deferred taxes).</p>` },
+  { id:"3b", pts:2.0, type:"mc",
     prompt:`<p class="instr">Which statement about accounting for net operating losses is correct?</p>`,
-    options:["If a company doesn't expect future profit, it forgoes all rights to carry a loss forward should it become profitable.","A company may freely choose the order in which it carries losses back or forward to specific years.","Carrying losses backward increases tax refund receivables on the balance sheet.","Carrying losses forward leads to deferred tax liabilities."],
-    answer:2,
-    solution:`<p>A loss <b>carryback</b> recovers tax already paid &rarr; a <b>tax refund receivable</b>. (Carryforward creates a deferred tax <i>asset</i>, not a liability; the order is set by rules, not free choice.)</p>
-    <p class="warn">&#9888; The grade for this MC wasn't visible in the scan — reasoned answer; verify.</p>` },
+    options:["If a company doesn't expect future profit, it forgoes all rights to carry a loss forward.","A company may freely choose the order in which it carries losses back or forward.","Carrying losses backward increases tax refund receivables on the balance sheet.","Carrying losses forward leads to deferred tax liabilities."],
+    answer:2, solution:`<p>A loss <b>carryback</b> recovers tax already paid → a <b>tax refund receivable</b>. (Carryforward → deferred tax asset, not liability.)</p>` },
   { id:"3c", pts:3.0, type:"numeric", context:C23_DAHLIA,
     prompt:`<p class="instr">What is financial income before tax for 2022?</p>`,
     fields:[{label:"Financial income before tax",pre:"€",value:310000,tol:1}],
-    solution:`<p>Start from taxable income 340,000. Financial depreciation is €10,000 lower than tax (20k vs 30k) &rarr; +10,000. Lawsuit provision €40,000 is in financial income but not yet deductible for tax &rarr; &minus;40,000. <b>340,000 + 10,000 &minus; 40,000 = €310,000.</b></p>` },
+    solution:`<p>340,000 + 10,000 (book depr &lt; tax depr) − 40,000 (lawsuit, in book not yet tax) = <b>€310,000</b>.</p>` },
   { id:"3d", pts:2.0, type:"numeric", context:C23_DAHLIA,
     prompt:`<p class="instr">Calculate the current portion of income tax expense for 2022.</p>`,
     fields:[{label:"Current income tax",pre:"€",value:85000,tol:1}],
-    solution:`<p>Current tax = taxable income &times; current rate = 340,000 &times; 25% = <b>€85,000.</b></p>` },
+    solution:`<p>Taxable income × current rate = 340,000 × 25% = <b>€85,000</b>.</p>` },
   { id:"3e", pts:4.0, type:"numeric", context:C23_DAHLIA,
-    prompt:`<p class="instr">What are the ending balances of deferred tax assets (DTA) and deferred tax liabilities (DTL) in 2022?</p>`,
+    prompt:`<p class="instr">What are the ending balances of DTA and DTL in 2022?</p>`,
     fields:[{label:"Ending DTA",pre:"€",value:8000,tol:1},{label:"Ending DTL",pre:"€",value:2000,tol:1}],
-    solution:`<p>Accelerated tax depreciation &rarr; future taxable amount &rarr; <b>DTL = 10,000 &times; 20% = €2,000.</b><br>
-    Lawsuit costs deductible later &rarr; future deductible amount &rarr; <b>DTA = 40,000 &times; 20% = €8,000.</b> (Future rate 20%; opening balances zero.)</p>` },
+    solution:`<p>Accelerated tax depreciation → DTL = 10,000 × 20% = <b>€2,000</b>. Lawsuit deductible later → DTA = 40,000 × 20% = <b>€8,000</b> (future rate 20%, opening 0).</p>` },
   { id:"3f", pts:1.0, type:"mc", context:C23_DAHLIA,
-    prompt:`<p class="instr">How do you calculate the total income tax expense based on d and e?</p>`,
+    prompt:`<p class="instr">How do you calculate total income tax expense based on d and e?</p>`,
     options:["Current portion of income tax + change in DTL − change in DTA","Current portion of income tax − change in DTL − change in DTA","Current portion of income tax − change in DTL + change in DTA","Current portion of income tax + change in DTL + change in DTA"],
-    answer:0,
-    solution:`<p>Income tax expense = current tax + increase in DTL − increase in DTA.</p>` },
+    answer:0, solution:`<p>Income tax expense = current tax + ΔDTL − ΔDTA.</p>` },
   { id:"3g", pts:2.0, type:"mc", context:C23_DAHLIA,
     prompt:`<p class="instr">What is the change in DTA and DTL in 2023?</p>`,
     options:["DTA: 4,000 credit. DTL: 4,000 credit.","DTA: 2,000 debit. DTL: 4,000 credit.","DTA: 4,000 credit. DTL: 2,000 credit.","DTA: 4,000 debit. DTL: 4,000 credit."],
-    answer:2,
-    solution:`<p>2023: more accelerated depreciation (30k vs 20k) &rarr; DTL rises 10,000&times;20% = <b>2,000 credit</b>. Lawsuit cost of 20,000 is realised &rarr; DTA falls 20,000&times;20% = <b>4,000 credit</b>. So DTA 4,000 credit, DTL 2,000 credit.</p>` },
+    answer:2, solution:`<p>2023: depreciation diff originates → DTL +10,000×20% = <b>2,000 credit</b>. Lawsuit 20,000 realised → DTA −20,000×20% = <b>4,000 credit</b>.</p>` },
 ]},
 { title:"FA — Revenue Recognition", items:[
   { id:"4a", pts:2.0, type:"mc",
     prompt:`<p class="instr">When would you <u>not</u> apply IFRS 15 to a contract?</p>`,
-    options:["When the contract has multiple performance obligations without a standalone selling price.","When the contract isn't in writing.","When payment is at least a year away and the contract has a significant financing component.","When it's probable that the agreed transaction price won't be collected."],
-    answer:3,
-    solution:`<p>IFRS 15 requires collection to be <b>probable</b>; if it isn't, the contract doesn't qualify (Step 1 criteria fail).</p>` },
+    options:["When there are multiple performance obligations without a standalone selling price.","When the contract isn't in writing.","When payment is at least a year away and there's a significant financing component.","When it's probable that the agreed transaction price won't be collected."],
+    answer:3, solution:`<p>IFRS 15 requires collection to be <b>probable</b>; otherwise the contract fails Step 1.</p>` },
   { id:"4b", pts:2.0, type:"mc",
     prompt:`<p class="instr">Which statement about the steps of IFRS 15 is <u>incorrect</u>?</p>`,
-    options:["There are multiple performance obligations if the promises to deliver goods/services are distinct and not interdependent.","The total transaction price is preferably allocated to multiple performance obligations using the residual approach.","Revenue is recognized if a customer can direct the use of, and obtain substantially all the benefits from, the asset/service.","Variable consideration is included only if it's reasonably assured of being received."],
-    answer:1,
-    solution:`<p>The transaction price is allocated on <b>relative standalone selling prices</b>, not the residual approach (the residual method is only an exception). So statement 2 is incorrect.</p>` },
+    options:["There are multiple performance obligations if the promises are distinct and not interdependent.","The total transaction price is preferably allocated to multiple performance obligations using the residual approach.","Revenue is recognized if a customer can direct the use of, and obtain substantially all benefits from, the asset.","Variable consideration is included only if reasonably assured of being received."],
+    answer:1, solution:`<p>Allocation uses <b>relative standalone selling prices</b>, not the residual approach (an exception only). So statement 2 is incorrect.</p>` },
   { id:"4c", pts:1.0, type:"numeric", context:C23_COOL,
     prompt:`<p class="instr">How many performance obligations does this agreement contain?</p>`,
     fields:[{label:"Performance obligations",value:3,tol:0}],
-    solution:`<p><b>3</b> — fridge, installation, and maintenance (all distinct).</p>` },
+    solution:`<p><b>3</b> — fridge, installation, maintenance.</p>` },
   { id:"4d", pts:3.0, type:"numeric", context:C23_COOL,
-    prompt:`<p class="instr">How much revenue is allocated to the fridge? Round to the nearest integer.</p>`,
+    prompt:`<p class="instr">How much revenue is allocated to the fridge? Round to nearest integer.</p>`,
     fields:[{label:"Fridge revenue",pre:"€",value:881,tol:2}],
-    solution:`<p>Standalone values: fridge 900, installation 75 (975−900), maintenance 200 (1,100−900); total 1,175. Fridge = 900/1,175 &times; 1,150 = <b>€881.</b></p>` },
+    solution:`<p>Standalone: fridge 900, installation 75, maintenance 200 (total 1,175). Fridge = 900/1,175 × 1,150 = <b>€881</b>.</p>` },
   { id:"4e", pts:3.0, type:"numeric", context:C23_COOL,
-    prompt:`<p class="instr">How much revenue is recognized at the end of 2023 on this entire transaction? Round to the nearest integer.</p>`,
-    fields:[{label:"Revenue recognized in 2023",pre:"€",value:1003,tol:2}],
-    solution:`<p>Fridge (881) and installation (73) are fully recognised at delivery. Maintenance (196) is over 2 years (24 months); 6 months fall in 2023 &rarr; 196&times;6/24 = 49. Total = 881 + 73 + 49 = <b>€1,003.</b></p>` },
-  { id:"4f", pts:2.0, type:"mc", context:C23_COOL, uncertain:true,
+    prompt:`<p class="instr">How much revenue is recognized at the end of 2023 on this entire transaction? Round to nearest integer.</p>`,
+    fields:[{label:"Revenue 2023",pre:"€",value:1003,tol:2}],
+    solution:`<p>Fridge 881 + installation 73 (at delivery) + maintenance 196×6/24 = 49 = <b>€1,003</b>.</p>` },
+  { id:"4f", pts:2.0, type:"mc", context:C23_COOL,
     prompt:`<p class="instr">Which statement is correct?</p>`,
-    options:["Coolgreen recognizes revenue over time because installation is a separate performance obligation.","Coolgreen recognizes revenue at the moment of payment by the customer.","Coolgreen recognizes revenue at different points in time due to the nature of this agreement.","Coolgreen recognizes revenue over time because the customer pays after delivery."],
-    answer:2,
-    solution:`<p>Fridge and installation are recognised at delivery (a point in time), maintenance over time &rarr; revenue is recognised at <b>different points in time</b>. Timing isn't driven by payment.</p>
-    <p class="warn">&#9888; The grade wasn't visible in the scan — reasoned answer; verify.</p>` },
+    options:["Coolgreen recognizes revenue over time because installation is a separate performance obligation.","Coolgreen recognizes revenue at the moment of payment.","Coolgreen recognizes revenue at different points in time due to the nature of this agreement.","Coolgreen recognizes revenue over time because the customer pays after delivery."],
+    answer:2, solution:`<p>Fridge &amp; installation at delivery (point in time), maintenance over time → revenue at <b>different points in time</b>.</p>` },
 ]},
 { title:"MA — Joint Costs (Ch 6)", items:[
   { id:"5a", pts:2.0, type:"mc",
-    prompt:`<p class="instr">Which method for allocating joint costs assumes the joint cost per unit is similar for each joint product?</p>`,
+    prompt:`<p class="instr">Which joint-cost allocation method assumes the joint cost per unit is similar for each product?</p>`,
     options:["Sales value at split-off point method","Constant gross profit percentage method","Net realizable value method","Physical measures method"],
-    answer:3,
-    solution:`<p>The <b>physical measures method</b> allocates on physical units, implicitly assuming the same cost per unit across joint products.</p>` },
+    answer:3, solution:`<p>The <b>physical measures method</b> allocates on physical units.</p>` },
+  { id:"5c", pts:3.0, type:"numeric", context:C23_DIESEL,
+    prompt:`<p class="instr">What is the incremental profit/loss from further processing Diesel? (Use a negative sign for a loss.)</p>`,
+    fields:[{label:"Incremental profit/(loss)",pre:"€",value:-60000,tol:1}],
+    solution:`<p>Additional revenue = (3,000×160) − (4,000×120) = 480,000 − 480,000 = 0; minus processing 60,000 = <b>−€60,000</b> (a loss).</p>` },
 ]},
 { title:"MA — Cost Estimation (Ch 24)", items:[
   { id:"6a", pts:2.0, type:"mc",
     prompt:`<p class="instr">What does the relevant range refer to?</p>`,
-    options:["The range of costs incurred in the production process.","The range of products for which costs are estimated.","The range of activity within which a company could theoretically operate.","The range of activity where the assumptions underlying a linear cost function hold true."],
-    answer:3,
-    solution:`<p>The <b>relevant range</b> is the activity band over which the linear cost-function assumptions are valid.</p>` },
+    options:["The range of costs incurred in production.","The range of products for which costs are estimated.","The range of activity within which a company could theoretically operate.","The range of activity where the assumptions underlying a linear cost function hold true."],
+    answer:3, solution:`<p>The activity band over which the <b>linear cost-function assumptions hold</b>.</p>` },
   { id:"6b", pts:8.0, type:"numeric", context:C23_TAKE,
-    prompt:`<p class="instr">Complete the cost function to calculate total cost at 2,200 miles (a level <i>before</i> the step increase). Give the intercept and slope.</p>`,
-    fields:[{label:"Intercept (fixed)",pre:"€",value:17000,tol:1},{label:"Slope (variable per mile)",pre:"€",value:5,tol:0.01}],
-    solution:`<p>High/low by <b>activity</b>: HIGH (5,000; 42,500), LOW (1,000; 22,000). Remove the €500 step (present at the 5,000 point): slope = (42,500 − 500 − 22,000)/(5,000 − 1,000) = 20,000/4,000 = <b>5</b>. Intercept = 22,000 − 1,000&times;5 = <b>17,000</b>.</p>
-    <p>So at 2,200 miles (before the step): 17,000 + 5&times;2,200 = €28,000.</p>` },
+    prompt:`<p class="instr">Complete the cost function for 2,200 miles (a level before the step). Give the intercept and slope.</p>`,
+    fields:[{label:"Intercept (fixed)",pre:"€",value:17000,tol:1},{label:"Slope (variable/mile)",pre:"€",value:5,tol:0.01}],
+    solution:`<p>High/low by activity: HIGH (5,000; 42,500), LOW (1,000; 22,000). Remove the €500 step (present at 5,000): slope = (42,500−500−22,000)/(5,000−1,000) = <b>5</b>. Intercept = 22,000 − 1,000×5 = <b>17,000</b>. (At 2,200: 17,000 + 5×2,200 = €28,000.)</p>` },
 ]},
 { title:"MA — Decision-Making (Ch 9)", items:[
   { id:"7a", pts:2.0, type:"mc",
     prompt:`<p class="instr">Which costs are <u>not</u> relevant for discontinuation decisions?</p>`,
     options:["joint costs and opportunity costs","sunk costs and fixed costs","joint costs and sunk costs","opportunity costs and fixed costs"],
-    answer:2,
-    solution:`<p><b>Joint costs and sunk costs.</b> Sunk costs are never relevant; joint costs are not relevant to a discontinuation decision (the other joint products still incur them). Opportunity costs are always relevant, and fixed costs can be relevant (avoidable ones).</p>` },
-  { id:"7b", pts:3.0, type:"mc", context:C23_ARC, uncertain:true,
+    answer:2, solution:`<p><b>Joint costs and sunk costs.</b> Sunk costs are never relevant; joint costs continue for the other joint products. Opportunity costs are always relevant; avoidable fixed costs can be relevant.</p>` },
+  { id:"7b", pts:3.0, type:"mc", context:C23_ARC,
     prompt:`<p class="instr">Based on all the information, what should ARC Inc. do about XYZ's offer?</p>`,
     options:["ARC should reject the special offer.","There is not enough information to make this decision.","ARC should accept the special offer.","ARC is indifferent between accepting and rejecting."],
-    answer:1,
-    solution:`<p><b>Not enough information.</b> ARC can use the freed/idle capacity to make and sell product B, so the decision needs the revenue and costs of that best alternative use (opportunity cost) — which isn't given.</p>
-    <p class="warn">&#9888; The exact grade wasn't visible; the model answer points to the opportunity-cost (product B) information being needed.</p>` },
+    answer:1, solution:`<p><b>Not enough information.</b> The freed/idle capacity could make &amp; sell product B, so the decision needs B&rsquo;s revenue and costs (opportunity cost) — not given.</p>` },
 ]},
 { title:"MA — Variances (Ch 17 & 18)", items:[
   { id:"8d", pts:2.0, type:"numeric",
-    prompt:`<p class="instr">In August, actual fixed overhead was €20,000 and the fixed overhead expenditure variance was adverse and equal to €3,500. How much was budgeted fixed overhead for August?</p>`,
+    prompt:`<p class="instr">In August, actual fixed overhead was €20,000 and the fixed overhead expenditure variance was adverse and equal to €3,500. How much was budgeted fixed overhead?</p>`,
     fields:[{label:"Budgeted fixed overhead",pre:"€",value:16500,tol:1}],
-    solution:`<p>Expenditure variance = budgeted − actual fixed overhead. Adverse means budgeted &lt; actual, so budgeted = 20,000 − 3,500 = <b>€16,500.</b></p>` },
+    solution:`<p>Expenditure variance = budgeted − actual. Adverse → budgeted &lt; actual → 20,000 − 3,500 = <b>€16,500</b>.</p>` },
 ]},
 { title:"MA — Divisional Performance (Ch 18–19)", items:[
-  { id:"9a", pts:2.0, type:"mc", uncertain:true,
-    prompt:`<p class="instr">Which is correct? (1) Having managers participate in budgeting reduces the likelihood of budget slack. (2) A moderate discrepancy between actual and budgeted performance can motivate managers.</p>`,
+  { id:"9a", pts:2.0, type:"mc",
+    prompt:`<p class="instr">Which is correct? (1) Manager participation in budgeting reduces budget slack. (2) A moderate discrepancy between actual and budgeted performance can motivate managers.</p>`,
     options:["statement 1 is correct, statement 2 is incorrect","both statements are correct","statement 1 is incorrect, statement 2 is correct","both statements are incorrect"],
-    answer:2,
-    solution:`<p>Participation tends to <i>increase</i> the opportunity for budget slack, so statement 1 is incorrect. A moderate (challenging but attainable) target is motivating, so statement 2 is correct.</p>
-    <p class="warn">&#9888; The grade wasn't visible in the scan — reasoned answer; verify.</p>` },
+    answer:2, solution:`<p>Participation tends to <i>increase</i> slack (stmt 1 false); a moderate, attainable target motivates (stmt 2 true).</p>` },
   { id:"9b", pts:2.0, type:"numeric", context:C23_ESTANCIA,
-    prompt:`<p class="instr">What is the current ROI for the wine division? (Round to the nearest integer %.)</p>`,
+    prompt:`<p class="instr">What is the current ROI for the wine division? (Round to nearest integer %.)</p>`,
     fields:[{label:"ROI",suf:"%",value:14,tol:0.5}],
-    solution:`<p>Operating profit = 12,000,000 − 2,000,000 − 200,000 = 9,800,000. Total assets = 25,000,000 + 45,000,000 = 70,000,000. ROI = 9,800,000/70,000,000 = <b>14%.</b></p>` },
+    solution:`<p>Operating profit = 12,000,000 − 2,000,000 − 200,000 = 9,800,000; total assets = 70,000,000. ROI = <b>14%</b>.</p>` },
   { id:"9c", pts:2.0, type:"numeric", context:C23_ESTANCIA,
     prompt:`<p class="instr">What is the current residual income (RI) for the frozen food division?</p>`,
     fields:[{label:"Residual income",pre:"€",value:4800000,tol:1}],
-    solution:`<p>Operating profit = 15,000,000 − 2,500,000 − 500,000 = 12,000,000. Total assets = 10,000,000 + 50,000,000 = 60,000,000. RI = 12,000,000 − 12% &times; 60,000,000 = 12,000,000 − 7,200,000 = <b>€4,800,000.</b></p>` },
+    solution:`<p>Operating profit = 15,000,000 − 2,500,000 − 500,000 = 12,000,000; total assets = 60,000,000. RI = 12,000,000 − 12%×60,000,000 = <b>€4,800,000</b>.</p>` },
   { id:"9d", pts:3.0, type:"mc", context:C23_ESTANCIA,
-    prompt:`<p class="instr">An expansion needs each division to invest €30,000,000, with expected additional profit €4,000,000 (wine) and €5,000,000 (frozen food). Which divisional manager is motivated to expand?</p>`,
-    options:["(1) wine NOT motivated, (2) frozen food motivated","both managers NOT motivated","(1) wine motivated, (2) frozen food NOT motivated","both managers motivated"],
-    answer:0,
-    solution:`<p>Wine (ROI): new project ROI = 4,000,000/30,000,000 = 13.3% &lt; current 14% &rarr; lowers ROI &rarr; <b>not motivated</b>. Frozen food (RI): new RI = 5,000,000 − 12%&times;30,000,000 = 5,000,000 − 3,600,000 = +1,400,000 &gt; 0 &rarr; <b>motivated</b>.</p>` },
+    prompt:`<p class="instr">Each division must invest €30,000,000; expected extra profit €4,000,000 (wine) and €5,000,000 (frozen food). Which manager is motivated to expand?</p>`,
+    options:["(1) wine NOT motivated, (2) frozen food motivated","both NOT motivated","(1) wine motivated, (2) frozen food NOT motivated","both motivated"],
+    answer:0, solution:`<p>Wine: new ROI = 4m/30m = 13.3% &lt; 14% → not motivated. Frozen food: new RI = 5m − 12%×30m = +1.4m → motivated.</p>` },
 ]},
 { title:"MA — Transfer Pricing (Ch 20)", items:[
   { id:"10a", pts:2.0, type:"mc",
     prompt:`<p class="instr">Which statement about transfer pricing is correct?</p>`,
-    options:["The market-based method compares the transaction to an internal transaction.","A transfer pricing system can be used to determine the expenses in a company.","A negotiated transfer price is a cost-based or market-based transfer price.","When a transfer takes place between divisions, the profit determination of the divisions changes."],
-    answer:3,
-    solution:`<p>Internal transfers shift profit between divisions (each division's measured profit changes), even though group profit is unaffected. The market-based method compares to an <i>external</i> market price; a negotiated price is neither purely cost- nor market-based.</p>` },
+    options:["The market-based method compares the transaction to an internal transaction.","A transfer pricing system can be used to determine the expenses in a company.","A negotiated transfer price is a cost-based or market-based transfer price.","When a transfer takes place between divisions, the profit determination of the company will change."],
+    answer:3, solution:`<p>Internal transfers change how profit is determined per division. (Market-based compares to an <i>external</i> price; negotiated is neither cost- nor market-based.)</p>` },
+  { id:"10b", pts:5.0, type:"numeric", context:C23_ABINBEV, uncertain:true,
+    prompt:`<p class="instr">What are the maximum and minimum transfer prices (per bottle) under the general transfer pricing rule?</p>`,
+    fields:[{label:"Maximum transfer price",pre:"€",value:12,tol:0.5},{label:"Minimum transfer price",pre:"€",value:8,tol:0.5}],
+    solution:`<p><b>Max = €12</b> (what Brewery pays outside). <b>Min</b> = internal variable cost (4−2 = 2) + opportunity cost of a lost external sale (10−4 = 6) = <b>€8</b> (Bottle is at full capacity).</p>
+    <p class="warn">&#9888; The model answer for 10b wasn&rsquo;t shown in the source — this is the standard rule; verify.</p>` },
+]},
+];
+
+/* ===================== 2025 FINAL PAPER ===================== */
+const F25_GOLIATH=`<h4>Case — Goliath Inc. (Equity, 1 Jan 2022)</h4>
+<table class="data"><tr><th>Account</th><th class="num">Amount</th></tr>
+<tr><td>Share capital − ordinary (par €5)</td><td class="num">€3,000,000</td></tr>
+<tr><td>Share premium − ordinary</td><td class="num">€9,100,000</td></tr>
+<tr><td>Treasury (ordinary) shares − repurchase price €19</td><td class="num">€3,990,000</td></tr>
+<tr><td>Share premium − treasury shares</td><td class="num">€25,000</td></tr>
+<tr><td>Share capital − 10% cumulative preference (par €30)</td><td class="num">€3,000,000</td></tr>
+<tr><td>Share premium − 10% cumulative preference</td><td class="num">€3,700,000</td></tr>
+<tr><td>Retained earnings</td><td class="num">€4,180,000</td></tr></table>
+<p>2022: May 31 issues 31,000 treasury shares for €744,000; June 30 issues 22,000 treasury shares for €198,000; Dec 20 announces €322,000 cash dividend; net income €2,231,000. Cost method for treasury shares.</p>`;
+const F25_FARNA=`<h4>Case — Farna Inc. (EPS, 2024)</h4>
+<p>Net income 2024 = <b>$2,806,020</b>; weighted-average ordinary shares = <b>2,142,000</b>. Two dilutive securities (issued 2023): <b>510,000</b> options (Plan A) at exercise price $44; <b>311,000</b> options (Plan B) at $54.4. Each option → 1 share. Par $5; average market price 2024 = <b>$52.8</b>. No dividends; no preference shares.</p>`;
+const F25_BMW=`<h4>Case — BMW (Tax, 2022)</h4>
+<p>Machine €80,000, 4-yr life, zero residual. Depreciation (financial / tax): 2022 25% / 55%; 2023 25% / 20%; 2024 25% / 15%; 2025 25% / 10%.<br>
+Two book-tax differences at end 2022: (i) taxable amounts €10,000 (2023), €5,000 (2024), €20,000 (2025); (ii) deductible amounts €4,000 (2023), €18,000 (2024), €12,000 (2025). No deferred taxes at start 2022. Financial income before depreciation &amp; tax = €120,000. Rate 40% (2022 &amp; 2023), 30% thereafter.</p>`;
+const F25_DELL=`<h4>Case — Dell (Revenue recognition, 2024)</h4>
+<p>Sells desktops &amp; offers installation (also available from others). Contract Nov 1, 2024: desktop + installation for <b>€4,700</b> total. Installation standalone fair value <b>€1,200</b>. Customer pays <b>€4,000</b> (= fair value of the desktop, cost €2,300) on delivery, balance on installation. Delivered <b>Dec 1, 2024</b>; installation completed <b>Jan 15, 2025</b>.</p>`;
+const F25_CROISSANTY=`<h4>Case — Croissanty Inc. (6c)</h4>
+<table class="data"><tr><th></th><th class="num">Croissants</th><th class="num">Buns</th></tr>
+<tr><td>Direct labor $/unit</td><td class="num">0.8</td><td class="num">0.3</td></tr>
+<tr><td>Direct material $/unit</td><td class="num">1.2</td><td class="num">1.6</td></tr>
+<tr><td>Variable overhead $/unit</td><td class="num">0.8</td><td class="num">1.8</td></tr>
+<tr><td>Allocated fixed overhead $/unit</td><td class="num">0.2</td><td class="num">0.2</td></tr>
+<tr><td>Units per baking hour</td><td class="num">40</td><td class="num">55</td></tr>
+<tr><td>Selling price $/unit</td><td class="num">3</td><td class="num">2.5</td></tr></table>
+<p>13,000 baking hours/yr (can idle). An outside contractor offers to make all budgeted Buns at $3/unit (Croissanty still supplies the direct materials); freed capacity makes more Croissants. Which item is relevant to the outsourcing decision?</p>`;
+const F25_TAKE=`<h4>Case — Takeaway.com (high-low)</h4>
+<table class="data"><tr><th class="num">Miles</th><th class="num">Total cost (EUR)</th></tr>
+<tr><td class="num">1,000</td><td class="num">22,000</td></tr><tr><td class="num">3,000</td><td class="num">44,500</td></tr><tr><td class="num">5,000</td><td class="num">42,500</td></tr><tr><td class="num">2,500</td><td class="num">35,000</td></tr><tr><td class="num">2,000</td><td class="num">32,600</td></tr></table>
+<p>Stepped increase in fixed costs of <b>€500</b> when miles reach <b>4,500</b>. Round to nearest integer.</p>`;
+const F25_NORDIX=`<h4>Case — Nordix Appliances (Decision-making)</h4>
+<p>Three blenders; final testing limited to <b>120,000</b> testing hours/quarter.</p>
+<table class="data"><tr><th></th><th class="num">BLENDX</th><th class="num">PURELUX</th><th class="num">TURBOMIX</th></tr>
+<tr><td>Selling price/unit</td><td class="num">90</td><td class="num">120</td><td class="num">100</td></tr>
+<tr><td>Variable production cost/unit</td><td class="num">50</td><td class="num">72</td><td class="num">58</td></tr>
+<tr><td>Variable selling cost/unit</td><td class="num">10</td><td class="num">8</td><td class="num">12</td></tr>
+<tr><td>Testing hours/unit</td><td class="num">1</td><td class="num">2</td><td class="num">0.75</td></tr>
+<tr><td>Max demand (units)</td><td class="num">70,000</td><td class="num">40,000</td><td class="num">100,000</td></tr></table>`;
+const F25_LUNAWOOD=`<h4>Case — LunaWood Instruments (Variances)</h4>
+<p>Two interchangeable artisans, Leo &amp; Nico. Standard per ukulele: <b>5</b> hrs Leo at $28 + <b>15</b> hrs Nico at $18. August: actual production <b>30</b> ukuleles; actual = <b>100</b> hrs Leo at $30 + <b>150</b> hrs Nico at $20.</p>`;
+const F25_BETA=`<h4>Case — Beta Ltd. (Budgeting)</h4>
+<p>2025 production budget = <b>2,400</b> units of product Y (no beginning/ending finished inventory). One unit needs <b>4 kg</b> of material B at <b>$12</b>/kg. Beginning inventory of B = <b>1,800 kg</b>; ending inventory budgeted at <b>15%</b> of annual usage.</p>`;
+
+const EXAM_2025_FINAL = [
+{ title:"FA — Multiple Choice", items:[
+  { id:"1a", pts:2.5, type:"mc",
+    prompt:`<p class="instr">NYX announces a 4-for-1 share split and a 7% stock dividend (par €26). Which statement is <u>incorrect</u>?</p>`,
+    options:["For a share split, share capital does not change. For a stock dividend, retained earnings decrease.","A share split decreases the share capital, while a stock dividend does not affect retained earnings.","No journal entry is required for a share split; for a stock dividend a journal entry is required.","For both a share split and a stock dividend, total equity does not change."],
+    answer:1, solution:`<p><b>B is the incorrect statement.</b> A split leaves total share capital unchanged (only par &amp; count change), and a stock dividend <i>does</i> reduce retained earnings — so B is wrong on both counts.</p>` },
+  { id:"1b", pts:2.5, type:"mc",
+    prompt:`<p class="instr">When a company repurchases a convertible bond before maturity, how is the gain/loss determined under IFRS?</p>`,
+    options:["By comparing the bond's fair value at issuance to the repurchase price.","By comparing the fair value of the liability component to its book (carrying) value.","By allocating the repurchase price proportionally between debt and equity.","By comparing the bond's face value to the repurchase price."],
+    answer:1, solution:`<p>Re-split the repurchase price, then compare the <b>liability component's fair value to its carrying value</b>; the equity component never creates P&amp;L.</p>` },
+  { id:"1c", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Which statement about option-based compensation under IFRS is correct?</p>`,
+    options:["Total compensation expense is based on the intrinsic value of the options at grant date.","Compensation expense cannot be recognized before the end of the service period.","Total compensation expense is based on the fair value of the options at grant date.","If an employee fails to exercise before expiration, the company should reverse prior expense."],
+    answer:2, solution:`<p>IFRS 2: measured at <b>grant-date fair value</b>, spread over the vesting period, not adjusted later for price moves or forfeited-by-non-exercise options.</p>` },
+  { id:"1d", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Paying <b>more</b> taxes now than you owe based on book income leads to…</p>`,
+    options:["a deferred tax asset","a deferred tax liability","a loss carryforward","a loss carryback"],
+    answer:0, solution:`<p>Prepaying tax relative to book income → a future benefit → <b>deferred tax asset</b>.</p>` },
+  { id:"1e", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Multiple performance obligations should be recognized as a single one if…</p>`,
+    options:["the service/product is distinct within the contract.","none of the above is correct.","both performance obligations are distinct.","each service/product is interdependent and interrelated."],
+    answer:3, solution:`<p>Bundle into one obligation when the goods/services are <b>not separately identifiable</b> (interdependent/interrelated).</p>` },
+  { id:"1f", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Under the cost-recovery method for long-term construction contracts…</p>`,
+    options:["revenue, costs and gross profit are recognized periodically during production.","revenue, costs and gross profit are recognized only when complete.","the company recognizes gross profit equal to costs each period.","revenue and costs are recognized periodically; gross profit is deferred until completion."],
+    answer:3, solution:`<p>Cost-recovery: revenue = costs each period (no profit yet) until the contract completes, then all gross profit is recognized.</p>` },
+]},
+{ title:"FA — Equity (Goliath)", items:[
+  { id:"2a", pts:2.0, type:"mc", context:F25_GOLIATH,
+    prompt:`<p class="instr">How many outstanding ordinary shares does Goliath have on January 1, 2022?</p>`,
+    options:["200,000","210,000","390,000","600,000"], answer:2,
+    solution:`<p>Issued = 3,000,000/5 = 600,000; treasury = 3,990,000/19 = 210,000; outstanding = <b>390,000</b>.</p>` },
+  { id:"2b", pts:2.0, type:"journal", context:F25_GOLIATH,
+    prompt:`<p class="instr">What is the journal entry for the May 31 transaction?</p><p class="note">[Round if necessary.]</p>`,
+    accounts:["Cash","Treasury (ordinary) shares","Share premium - treasury shares","Share capital - ordinary","Share premium - ordinary","Retained earnings","Gain on sale of treasury shares"],
+    rows:[{account:"Cash",debit:744000,credit:0},{account:"Treasury (ordinary) shares",debit:0,credit:589000},{account:"Share premium - treasury shares",debit:0,credit:155000}],
+    solution:`<div class="je"><span>Dr</span><span class="acc">Cash</span><span class="amt2">744,000</span></div>
+    <div class="je indent"><span>Cr</span><span class="acc">Treasury shares</span><span class="amt2">589,000</span></div><div class="ex">31,000 × €19 cost.</div>
+    <div class="je indent"><span>Cr</span><span class="acc">Share premium − treasury shares</span><span class="amt2">155,000</span></div><div class="ex">744,000 − 589,000 (above cost).</div>` },
+  { id:"2c", pts:2.0, type:"numeric", context:F25_GOLIATH,
+    prompt:`<p class="instr">How much of the December 20 cash dividend goes to ordinary shareholders?</p>`,
+    fields:[{label:"To ordinary shareholders",pre:"€",value:22000,tol:1}],
+    solution:`<p>Preference first: 10% × 3,000,000 = 300,000. Ordinary = 322,000 − 300,000 = <b>€22,000</b>.</p>` },
+  { id:"2d", pts:4.0, type:"numeric", context:F25_GOLIATH,
+    prompt:`<p class="instr">What is the ending balance of retained earnings on December 31, 2022 (incl. net income)?</p>`,
+    fields:[{label:"Ending retained earnings",pre:"€",value:6049000,tol:1}],
+    solution:`<p>June 30 reissue below cost: 22,000×(19−9) = 220,000 shortfall; absorb share premium−treasury (25,000 + 155,000 = 180,000); remaining 40,000 → retained earnings.<br>
+    4,180,000 + 2,231,000 − 322,000 − 40,000 = <b>€6,049,000</b>.</p>` },
+]},
+{ title:"FA — EPS (Farna)", items:[
+  { id:"3a", pts:2.0, type:"mc", context:F25_FARNA,
+    prompt:`<p class="instr">Which element is part of the journal entry if all 510,000 Plan A options are exercised?</p>`,
+    options:["Debit options outstanding for $22.44 million","Debit share capital − ordinary for $2.55 million","Debit cash for $22.44 million","Credit Share Premium for $22.44 million"],
+    answer:2, solution:`<p>Cash in = 510,000 × $44 = <b>$22.44m (debit Cash)</b>. Credits: share capital 510,000×$5 = $2.55m and share premium $19.89m.</p>` },
+  { id:"3b", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Which statement is true about including options in diluted EPS under IFRS?</p>`,
+    options:["Included only if the exercise price is above market price.","They are commonly not included in EPS calculations.","All options are always included regardless of exercise price.","None of the above is true."],
+    answer:3, solution:`<p><b>None.</b> Options are included only when <i>dilutive</i> (exercise price below average market price); anti-dilutive ones are excluded.</p>` },
+  { id:"3d", pts:6.0, type:"numeric", context:F25_FARNA,
+    prompt:`<p class="instr">Calculate Farna's basic and diluted EPS for 2024. (Round to two decimals.)</p>`,
+    fields:[{label:"Basic EPS",pre:"$",value:1.31,tol:0.02},{label:"Diluted EPS",pre:"$",value:1.26,tol:0.02}],
+    solution:`<p><b>Basic</b> = 2,806,020 / 2,142,000 = <b>$1.31</b>. Only Plan A is dilutive ($44 &lt; $52.8). Treasury-stock method: proceeds 510,000×44 = 22,440,000; shares bought back 22,440,000/52.8 = 425,000; incremental = 85,000. <b>Diluted</b> = 2,806,020 / 2,227,000 = <b>$1.26</b>. (Plan B at $54.4 is anti-dilutive, excluded.)</p>` },
+]},
+{ title:"FA — Tax (BMW)", items:[
+  { id:"4a", pts:1.0, type:"numeric", context:F25_BMW,
+    prompt:`<p class="instr">What is financial income before tax for 2022?</p>`,
+    fields:[{label:"Financial income before tax",pre:"€",value:100000,tol:1}],
+    solution:`<p>120,000 − book depreciation (25%×80,000 = 20,000) = <b>€100,000</b>.</p>` },
+  { id:"4b", pts:3.0, type:"numeric", context:F25_BMW,
+    prompt:`<p class="instr">What is the taxable income for 2022?</p>`,
+    fields:[{label:"Taxable income",pre:"€",value:75000,tol:1}],
+    solution:`<p>100,000 − extra tax depreciation (44,000 − 20,000 = 24,000) − 35,000 (future taxable diff i) + 34,000 (future deductible diff ii) = <b>€75,000</b>.</p>` },
+  { id:"4c", pts:1.0, type:"numeric", context:F25_BMW,
+    prompt:`<p class="instr">Compute the current portion of income tax expense for 2022.</p>`,
+    fields:[{label:"Current income tax",pre:"€",value:30000,tol:1}],
+    solution:`<p>75,000 × 40% = <b>€30,000</b>.</p>` },
+  { id:"4d", pts:4.0, type:"numeric", context:F25_BMW,
+    prompt:`<p class="instr">Compute the total change of deferred tax liability (DTL) for 2022.</p>`,
+    fields:[{label:"Change in DTL",pre:"€",value:19100,tol:1}],
+    solution:`<p>Diff (i): 10,000×40% + 5,000×30% + 20,000×30% = 11,500. Depreciation reversals: 4,000×40% + 8,000×30% + 12,000×30% = 7,600. Total = <b>€19,100</b>.</p>` },
+  { id:"4e", pts:2.0, type:"numeric", context:F25_BMW,
+    prompt:`<p class="instr">Compute the total change of deferred tax asset (DTA) for 2022.</p>`,
+    fields:[{label:"Change in DTA",pre:"€",value:10600,tol:1}],
+    solution:`<p>Diff (ii): 4,000×40% + 18,000×30% + 12,000×30% = <b>€10,600</b>.</p>` },
+  { id:"4f", pts:1.5, type:"mc", context:F25_BMW,
+    prompt:`<p class="instr">Compute the income tax expense with your answers under c, d, and e.</p>`,
+    options:["c − d + e","c − d − e","c + d − e","c + d + e"],
+    answer:2, solution:`<p>Tax expense = current (c) + ΔDTL (d) − ΔDTA (e) = 30,000 + 19,100 − 10,600 = €38,500. So <b>c + d − e</b>.</p>` },
+]},
+{ title:"FA — Revenue Recognition (Dell)", items:[
+  { id:"5a", pts:2.0, type:"numeric", context:F25_DELL,
+    prompt:`<p class="instr">How many separate performance obligations are in the contract?</p>`,
+    fields:[{label:"Performance obligations",value:2,tol:0}],
+    solution:`<p><b>2</b> — the desktop and the installation service (both distinct).</p>` },
+  { id:"5b", pts:3.0, type:"numeric", context:F25_DELL,
+    prompt:`<p class="instr">Compute the revenue allocated to the installation service. (Round to nearest integer.)</p>`,
+    fields:[{label:"Installation revenue",pre:"€",value:1085,tol:2}],
+    solution:`<p>FV computer 4,000 + FV installation 1,200 = 5,200. Installation = 1,200/5,200 × 4,700 = <b>€1,085</b>.</p>` },
+  { id:"5c", pts:3.0, type:"numeric", context:F25_DELL,
+    prompt:`<p class="instr">How much revenue is recognized at the end of 2024 on this entire transaction? (Round to nearest integer.)</p>`,
+    fields:[{label:"Revenue 2024",pre:"€",value:3615,tol:2}],
+    solution:`<p>Only the computer is delivered in 2024: 4,700 − 1,085 = <b>€3,615</b>. Installation (€1,085) is recognized in 2025.</p>` },
+  { id:"5d", pts:2.0, type:"mc", context:F25_DELL,
+    prompt:`<p class="instr">Which is correct for the journal entry as of January 15, 2025?</p>`,
+    options:["Debit Unearned Service Revenue","Credit Cash","Credit Inventory","Debit Sales Revenue"],
+    answer:0, solution:`<p>Completing installation clears the contract liability: <b>Debit Unearned Service Revenue</b>, Credit Service Revenue.</p>` },
+]},
+{ title:"MA — Multiple Choice", items:[
+  { id:"6a", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Cost estimation. S1: Inspection-of-accounts gives an objective classification. S2: The high-low method only considers the periods with the highest and lowest costs. Which is correct?</p>`,
+    options:["Statement 2 correct, statement 1 incorrect","Both statements are incorrect","Both statements are correct","Statement 1 correct, statement 2 incorrect"],
+    answer:1, solution:`<p><b>Both incorrect.</b> Inspection of accounts is subjective (judgement-based); high-low uses the highest/lowest <i>activity</i> levels, not the highest/lowest costs.</p>` },
+  { id:"6b", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Which statement about the least-squares method is correct?</p>`,
+    options:["It ensures all residuals are equal.","It passes the regression line through all data points.","It uses all observations in the data set.","It minimizes the sum of all residuals."],
+    answer:2, solution:`<p>Least squares <b>uses every observation</b> and minimizes the sum of <i>squared</i> residuals (not the residuals themselves).</p>` },
+  { id:"6c", pts:2.5, type:"mc", context:F25_CROISSANTY,
+    prompt:`<p class="instr">Which item is relevant in the outsourcing decision?</p>`,
+    options:["Original selling price per unit of Buns","Direct material price per unit of Buns","Baking hours per unit of Buns","None of the above"],
+    answer:2, solution:`<p><b>Baking hours per unit of Buns</b> — outsourcing frees those hours for more Croissants (the opportunity cost of capacity). Selling price &amp; material cost are unchanged.</p>` },
+  { id:"6d", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Replacing a machine. S1: The book value of the current machine is not relevant. S2: Environmental impact is not relevant because it's hard to quantify. Which is correct?</p>`,
+    options:["Statement 1 incorrect, statement 2 correct","Statement 1 correct, statement 2 incorrect","Both statements are correct","Both statements are incorrect"],
+    answer:1, solution:`<p>S1 correct (book value is a sunk cost). S2 incorrect — qualitative factors like environmental impact are still relevant.</p>` },
+  { id:"6e", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Which statement is correct?</p>`,
+    options:["A budget used as a planning tool also works well as a motivation tool.","Participative budgeting means higher-level managers prepare the budget for lower-level managers.","A budget can be used as a coordination tool to inform managers about expectations.","All of the above."],
+    answer:2, solution:`<p>Budgets coordinate by communicating expectations. (Planning vs. motivation can conflict; participative budgeting is bottom-up — so A and B are wrong.)</p>` },
+  { id:"6f", pts:2.5, type:"mc",
+    prompt:`<p class="instr">A favorable wage rate variance can indicate:</p>`,
+    options:["the hiring of higher-skilled labour","effective negotiations by labour unions","the purchase of cheaper raw materials","lower negotiation power of labour unions"],
+    answer:3, solution:`<p>A favourable rate variance = actual wage below standard, consistent with <b>weaker union bargaining power</b>.</p>` },
+]},
+{ title:"MA — Cost Estimation", items:[
+  { id:"7", pts:6.0, type:"numeric", context:F25_TAKE,
+    prompt:`<p class="instr">Complete the cost function for 4,800 miles (above the step). Give intercept and slope.</p>`,
+    fields:[{label:"Intercept (fixed)",pre:"€",value:17500,tol:1},{label:"Slope (variable/mile)",pre:"€",value:5,tol:0.01}],
+    solution:`<p>HIGH (5,000; 42,500), LOW (1,000; 22,000). Strip the €500 step from the high point: slope = (42,000−22,000)/4,000 = <b>5</b>. Pre-step intercept = 22,000 − 5×1,000 = 17,000; add €500 (4,800 is above the step) → <b>17,500</b>. (Total = 17,500 + 5×4,800 = €41,500.)</p>` },
+]},
+{ title:"MA — Decision-Making (Nordix)", items:[
+  { id:"8", pts:9.0, type:"numeric", context:F25_NORDIX,
+    prompt:`<p class="instr">Determine the profit-maximizing product mix (units of each blender).</p>`,
+    fields:[{label:"BLENDX units",value:45000,tol:1},{label:"PURELUX units",value:0,tol:1},{label:"TURBOMIX units",value:100000,tol:1}],
+    solution:`<p>CM/unit: BLENDX 30, PURELUX 40, TURBOMIX 30. CM per testing hour: BLENDX 30, PURELUX 20, TURBOMIX 40. Rank: TURBOMIX &gt; BLENDX &gt; PURELUX.<br>
+    TURBOMIX 100,000 × 0.75 = 75,000 hrs; remaining 45,000 hrs → BLENDX 45,000 units (demand 70,000). None left for PURELUX. <b>BLENDX 45,000; PURELUX 0; TURBOMIX 100,000.</b></p>` },
+]},
+{ title:"MA — Variances (LunaWood)", items:[
+  { id:"9a", pts:11.0, type:"numeric", context:F25_LUNAWOOD,
+    prompt:`<p class="instr">Calculate the direct labor efficiency variance of Leo (state the magnitude; it is Favourable/Adverse — see solution).</p>`,
+    fields:[{label:"Efficiency variance",pre:"$",value:1400,tol:1}],
+    solution:`<p>(Standard hrs for output − actual) × standard rate = (30×5 − 100) × $28 = (150 − 100) × 28 = <b>$1,400 Favourable</b>.</p>` },
+  { id:"9b", pts:11.0, type:"numeric", context:F25_LUNAWOOD,
+    prompt:`<p class="instr">Calculate the direct labor mix variance of Nico (state the magnitude; it is Favourable/Adverse — see solution).</p>`,
+    fields:[{label:"Mix variance",pre:"$",value:675,tol:1}],
+    solution:`<p>Total actual hrs = 250. Nico standard mix = 15/20 = 75% → 187.5 hrs; actual 150. (187.5 − 150) × $18 = <b>$675 Favourable</b>.</p>` },
+]},
+{ title:"MA — Budgeting (Beta)", items:[
+  { id:"10a", pts:4.0, type:"numeric", context:F25_BETA,
+    prompt:`<p class="instr">Direct material usage budget in kilograms.</p>`,
+    fields:[{label:"Usage budget",suf:"kg",value:9600,tol:1}],
+    solution:`<p>2,400 units × 4 kg = <b>9,600 kg</b>.</p>` },
+  { id:"10b", pts:4.0, type:"numeric", context:F25_BETA,
+    prompt:`<p class="instr">Direct material purchase budget in dollars.</p>`,
+    fields:[{label:"Purchase budget",pre:"$",value:110880,tol:1}],
+    solution:`<p>Ending inv = 15% × 9,600 = 1,440 kg. Purchases = 9,600 + 1,440 − 1,800 = 9,240 kg × $12 = <b>$110,880</b>.</p>` },
+]},
+];
+
+/* ===================== 2025 RESIT PAPER ===================== */
+const R25_OBELISK=`<h4>Case — Obelisk Inc. (2022)</h4>
+<p>&bull; Net income 2022 = <b>€8 million</b>.<br>
+&bull; 4% convertible debt issued start 2022: two-year term, face value <b>€20 million</b> (= proceeds). Market rate <b>7%</b>. Net interest €866,000 in 2022. Converts to <b>700,000</b> regular shares.<br>
+&bull; April 1, 2022: issued <b>800,000</b> 5% non-cumulative convertible preference shares, proceeds €16m; each → 1 regular share.<br>
+&bull; No dividends. <b>3 million</b> regular shares all year. Par €1 all shares.</p>`;
+const R25_TUI=`<h4>Case — TUI Group (Tax)</h4>
+<p>No book-tax differences. History: 2016 income 100,000 (30%); 2017 120,000 (30%); 2018 80,000 (35%); 2019 50,000 (40%); 2020 <b>loss −250,000</b> (rate 40%). TUI does not expect to be profitable in 2021+. Use standard Kieso carryback/forward rules.</p>`;
+const R25_ABC=`<h4>Case — ABC Construction Inc. (percentage-of-completion)</h4>
+<p>Bridge contract €7,000,000; 2022–2023.</p>
+<table class="data"><tr><th>In EUR</th><th class="num">2022</th><th class="num">2023</th></tr>
+<tr><td>Costs incurred during year</td><td class="num">3,300,000</td><td class="num">2,750,000</td></tr>
+<tr><td>Estimated costs to complete</td><td class="num">2,700,000</td><td class="num">−</td></tr>
+<tr><td>Billings during year</td><td class="num">2,500,000</td><td class="num">4,500,000</td></tr>
+<tr><td>Cash collected during year</td><td class="num">2,000,000</td><td class="num">5,000,000</td></tr></table>
+<p>Cost-to-cost method; costs settled in cash same period.</p>`;
+const R25_INTER=`<h4>Case — Intergalaxy Express Navigation (Cost allocation)</h4>
+<p>Two divisions: FREIGHT &amp; VOYAGER. Total overhead budgeted <b>$945,000</b>. Light-years: FREIGHT 630,000, VOYAGER 315,000.</p>
+<table class="data"><tr><th>Activity</th><th class="num">Overhead</th><th>Driver</th><th class="num">FREIGHT</th><th class="num">VOYAGER</th></tr>
+<tr><td>Mission Coordination</td><td class="num">$540,000</td><td>missions</td><td class="num">4,000</td><td class="num">2,000</td></tr>
+<tr><td>Passenger Services</td><td class="num">$405,000</td><td>passengers</td><td class="num">3,000</td><td class="num">24,000</td></tr></table>`;
+const R25_SODACO=`<h4>Case — SodaCo (Decision-making)</h4>
+<table class="data"><tr><th>$</th><th class="num">LimePop</th><th class="num">BerryFizz</th><th class="num">Total</th></tr>
+<tr><td>Sales</td><td class="num">25,000</td><td class="num">13,000</td><td class="num">38,000</td></tr>
+<tr><td>Variable production cost</td><td class="num">7,000</td><td class="num">5,000</td><td class="num">12,000</td></tr>
+<tr><td>Variable period cost</td><td class="num">4,000</td><td class="num">3,000</td><td class="num">7,000</td></tr>
+<tr><td>Direct fixed production cost</td><td class="num">3,000</td><td class="num">3,000</td><td class="num">6,000</td></tr>
+<tr><td>Allocated fixed production cost</td><td class="num">5,000</td><td class="num">6,000</td><td class="num">11,000</td></tr>
+<tr><td>Profit</td><td class="num">6,000</td><td class="num">−4,000</td><td class="num">2,000</td></tr></table>
+<p>Direct fixed costs are specific to each line; allocated fixed costs are company-level. Considering dropping BerryFizz.</p>`;
+const R25_FLEX=`<h4>Case — Company Flex (Budgeting/Variances 2024, absorption)</h4>
+<table class="data"><tr><th></th><th>Static budget</th><th>Actual</th></tr>
+<tr><td>Units</td><td>20,000</td><td>15,000</td></tr>
+<tr><td>Direct material</td><td>0.5 kg at $7/kg</td><td>2,000 kg for $18,000</td></tr>
+<tr><td>Direct labour</td><td>0.6 hr/unit at $6/hr</td><td>12,000 hrs for $84,000</td></tr>
+<tr><td>Variable production overhead</td><td>$5 per DLH</td><td>$80,000</td></tr></table>`;
+const R25_STAR=`<h4>Case — Star B.V. (Least-squares)</h4>
+<p>Regression of overhead costs on direct labour hours: R² = <b>0.88</b>, 120 observations, intercept <b>7,000</b>, slope <b>0.45</b>. It takes 2 direct labour hours per unit.</p>`;
+
+const EXAM_2025_RESIT = [
+{ title:"FA — Multiple Choice", items:[
+  { id:"1a", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Which statement about share dividends and share splits is correct?</p>`,
+    options:["Payment of cash and share dividends increase total assets.","Both share dividends and share splits increase the number of shares.","Share splits decrease the liquidity of a company's shares.","Both share dividends and share splits increase equity."],
+    answer:1, solution:`<p><b>Both increase the number of shares</b> without changing total equity or assets.</p>` },
+  { id:"1b", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Which statement is correct?</p>`,
+    options:["The debt component of a convertible bond is found by deducting the nominal value of the conversion option from total proceeds (with-and-without method).","Convertible bonds give the issuer a lower interest rate than an otherwise similar non-convertible bond.","When preference shares are repurchased above their issue price, the difference is a loss in the income statement.","When convertible bonds are settled before maturity, the issuer books a gain when the fair value of the debt component exceeds its book value."],
+    answer:1, solution:`<p>Convertible bonds carry a <b>lower coupon</b> because of the conversion option. (Debt component is measured directly; preference-share repurchase hits equity; FV &gt; book value of debt = a loss.)</p>` },
+  { id:"1c", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Which statement is correct?</p>`,
+    options:["Revenue can't be recognized without a valid contract.","Revenue can be recognized even if the contract hasn't identified the rights of all parties.","Revenue should be recognized even if the contract is wholly unperformed.","Revenue should be recognized when the customer has a right to receive consideration."],
+    answer:0, solution:`<p>A <b>valid contract</b> (IFRS 15 Step 1) is a precondition for any revenue recognition.</p>` },
+  { id:"1d", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Paying <b>less</b> taxes now than you owe based on book income leads to…</p>`,
+    options:["a deferred tax liability.","a loss carryback.","a loss carryforward.","a deferred tax asset."],
+    answer:0, solution:`<p>Paying less now → taxed later → <b>deferred tax liability</b>.</p>` },
+  { id:"1e", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Which statement is correct?</p>`,
+    options:["A company should reduce a deferred tax asset if it is probable it won't realize some/all of it.","A company should reduce a deferred tax liability if it is probable it won't realize some/all of it.","A company should reduce a loss carryback if it is probable it won't realize some/all of it.","A company should reduce the accrual of a permanent book-tax difference if it is probable it won't realize it."],
+    answer:0, solution:`<p>Only deferred tax <b>assets</b> are written down (valuation allowance) when realization isn't probable.</p>` },
+]},
+{ title:"FA — EPS (Obelisk)", items:[
+  { id:"3a", pts:4.0, type:"numeric", context:R25_OBELISK,
+    prompt:`<p class="instr">Calculate the present value of the liability component of the convertible bonds on issuance.</p>`,
+    fields:[{label:"Liability component",pre:"€",value:18915191,tol:3000}],
+    solution:`<p>Discount at 7%: coupon 4%×20m = 800,000/yr. PV = 800,000×(annuity 2yr,7%) + 20,000,000/1.07&sup2; ≈ 1,446,411 + 17,468,780 = <b>≈ €18,915,191</b>. (Equity component = €1,084,809.)</p>` },
+  { id:"3b", pts:2.0, type:"mc", context:R25_OBELISK,
+    prompt:`<p class="instr">Which element is part of the journal entry for conversion of all convertible preference shares?</p>`,
+    options:["Debit cash for €9 million.","Credit share premium − convertible preference shares for €16 million.","Credit share capital (par value) − regular shares for €10 million.","Debit share premium − convertible preference shares for €15.2 million."],
+    answer:3, solution:`<p>Book-value method: remove preference premium (16m − 0.8m par = <b>15.2m, debited</b>) and capital 0.8m; credit regular capital 0.8m and regular premium 15.2m.</p>` },
+  { id:"3c", pts:8.0, type:"numeric", context:R25_OBELISK,
+    prompt:`<p class="instr">Calculate basic and diluted EPS and the incremental effects. Round to two decimals.</p>`,
+    fields:[{label:"Basic EPS",pre:"€",value:2.67,tol:0.02},{label:"Diluted EPS",pre:"€",value:2.06,tol:0.02},{label:"Incremental — bonds",pre:"€",value:1.24,tol:0.03},{label:"Incremental — preference",pre:"€",value:0,tol:0.01}],
+    solution:`<p><b>Basic</b> = 8,000,000/3,000,000 = <b>€2.67</b>. Incremental: CPS 0/(9/12×800,000=600,000) = <b>0</b>; bonds 866,000/700,000 = <b>1.24</b>.<br>
+    Add CPS → 8,000,000/3,600,000 = 2.22; add bonds → 8,866,000/4,300,000 = <b>€2.06</b> (both dilutive).</p>` },
+]},
+{ title:"FA — Tax (TUI)", items:[
+  { id:"4a", pts:2.0, type:"numeric", context:R25_TUI,
+    prompt:`<p class="instr">If TUI carries back the 2020 loss, compute the net loss (after tax) for 2020. Use a minus sign.</p>`,
+    fields:[{label:"Net loss after tax",pre:"€",value:-202000,tol:1}],
+    solution:`<p>Carry back to 2018 &amp; 2019: refund = 80,000×35% + 50,000×40% = 28,000 + 20,000 = 48,000. Net loss = −(250,000 − 48,000) = <b>−€202,000</b>.</p>` },
+  { id:"4b", pts:2.0, type:"mc", context:R25_TUI,
+    prompt:`<p class="instr">By how much could a loss carryforward further reduce the 2020 net operating loss?</p>`,
+    options:["120,000","0","130,000","The exact amount depends on the future enacted tax rate."],
+    answer:1, solution:`<p><b>0</b> — TUI doesn't expect future profits, so no deferred tax asset can be recognized for the carryforward.</p>` },
+  { id:"4c", pts:4.0, type:"numeric", context:R25_TUI,
+    prompt:`<p class="instr">(Carryforward elected.) 2021 taxable income is €300,000; rate 30%. Compute the ending DTA at end of 2021.</p>`,
+    fields:[{label:"Ending DTA",pre:"€",value:0,tol:1}],
+    solution:`<p>The full €250,000 carryforward is used against 2021's €300,000 income, leaving none → <b>DTA = €0</b>.</p>` },
+  { id:"4d", pts:2.0, type:"numeric", context:R25_TUI,
+    prompt:`<p class="instr">Compute net income (after tax) for 2021.</p>`,
+    fields:[{label:"Net income 2021",pre:"€",value:285000,tol:1}],
+    solution:`<p>Taxable after carryforward = 300,000 − 250,000 = 50,000; tax = 15,000. Net income = 300,000 − 15,000 = <b>€285,000</b>.</p>` },
+]},
+{ title:"FA — Revenue Recognition (ABC Construction)", items:[
+  { id:"5a", pts:2.0, type:"journal", context:R25_ABC,
+    prompt:`<p class="instr">Journal entry for the cost of construction in 2022.</p>`,
+    accounts:["Construction in Process","Cash","Accounts receivable","Billings on Construction in Process","Revenue from long-term contracts","Construction expense"],
+    rows:[{account:"Construction in Process",debit:3300000,credit:0},{account:"Cash",debit:0,credit:3300000}],
+    solution:`<div class="je"><span>Dr</span><span class="acc">Construction in Process</span><span class="amt2">3,300,000</span></div><div class="je indent"><span>Cr</span><span class="acc">Cash</span><span class="amt2">3,300,000</span></div>` },
+  { id:"5b", pts:1.0, type:"journal", context:R25_ABC,
+    prompt:`<p class="instr">Journal entry for the progress billings during 2022.</p>`,
+    accounts:["Accounts receivable","Billings on Construction in Process","Cash","Construction in Process","Revenue from long-term contracts"],
+    rows:[{account:"Accounts receivable",debit:2500000,credit:0},{account:"Billings on Construction in Process",debit:0,credit:2500000}],
+    solution:`<div class="je"><span>Dr</span><span class="acc">Accounts receivable</span><span class="amt2">2,500,000</span></div><div class="je indent"><span>Cr</span><span class="acc">Billings on Construction in Process</span><span class="amt2">2,500,000</span></div>` },
+  { id:"5c", pts:1.0, type:"journal", context:R25_ABC,
+    prompt:`<p class="instr">Journal entry for the cash collection during 2022.</p>`,
+    accounts:["Cash","Accounts receivable","Billings on Construction in Process","Construction in Process"],
+    rows:[{account:"Cash",debit:2000000,credit:0},{account:"Accounts receivable",debit:0,credit:2000000}],
+    solution:`<div class="je"><span>Dr</span><span class="acc">Cash</span><span class="amt2">2,000,000</span></div><div class="je indent"><span>Cr</span><span class="acc">Accounts receivable</span><span class="amt2">2,000,000</span></div>` },
+  { id:"5d", pts:3.0, type:"numeric", context:R25_ABC,
+    prompt:`<p class="instr">How much revenue should be reported in 2022?</p>`,
+    fields:[{label:"Revenue 2022",pre:"€",value:3850000,tol:1}],
+    solution:`<p>% complete = 3,300,000/6,000,000 = 55%. Revenue = 55% × 7,000,000 = <b>€3,850,000</b>.</p>` },
+  { id:"5e", pts:3.5, type:"numeric", context:R25_ABC,
+    prompt:`<p class="instr">How much gross profit should be reported in 2023?</p>`,
+    fields:[{label:"Gross profit 2023",pre:"€",value:400000,tol:1}],
+    solution:`<p>2022 GP = 55% × (7,000,000 − 6,000,000) = 550,000. 2023 GP = 7,000,000 − 6,050,000 (total cost) − 550,000 = <b>€400,000</b>.</p>` },
+]},
+{ title:"MA — Multiple Choice", items:[
+  { id:"6a", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Which statement about cost classification is correct?</p>`,
+    options:["Relevant costs are variable costs that can be changed by a managerial decision.","Costs can be indirect to some cost objects, but direct to others.","Factory maintenance wages are direct manufacturing costs.","Variable cost per unit decreases as more units are produced."],
+    answer:1, solution:`<p>Direct vs. indirect is <b>relative to the cost object</b> — the same cost can be direct to one object and indirect to another.</p>` },
+  { id:"6b", pts:2.5, type:"mc",
+    prompt:`<p class="instr">When should firms prefer a traditional costing system over ABC?</p>`,
+    options:["When product diversity is very high","When indirect costs are very high compared to total costs","When allocating costs for managerial decision-making","When information gathering costs are very high"],
+    answer:3, solution:`<p>ABC's accuracy benefit is outweighed when <b>data-gathering costs are very high</b>; then the simpler traditional system is preferable.</p>` },
+  { id:"6c", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Under absorption costing, which cost is directly affected when the denominator-level activity changes from theoretical to normal capacity?</p>`,
+    options:["Manufacturing cost per unit","Total manufacturing costs","Total fixed manufacturing overhead","Period cost per unit"],
+    answer:0, solution:`<p>Changing the denominator changes the fixed-overhead-per-unit rate → <b>manufacturing cost per unit</b>. Totals are unaffected.</p>` },
+  { id:"6d", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Which item is <u>not</u> relevant to the decision to replace current equipment?</p>`,
+    options:["Disposal value of the current equipment","Remaining useful life of the current equipment","Purchase price of the current equipment","Operating costs of the current equipment"],
+    answer:2, solution:`<p><b>Purchase price</b> of existing equipment is a sunk cost — irrelevant.</p>` },
+  { id:"6e", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Favourable total direct material variance £600; adverse price variance £200; adverse mix variance £1,500. What is the usage variance?</p>`,
+    options:["£2,300 favourable","£1,700 favourable","£800 favourable","Too little information is given."],
+    answer:2, solution:`<p>Total = price + usage → 600F = 200A + usage → usage = <b>£800 favourable</b>. (Mix is nested within usage.)</p>` },
+  { id:"6f", pts:2.5, type:"mc",
+    prompt:`<p class="instr">Cost estimation. S1: The engineering method is useful for repetitive production processes. S2: Linear regression enables predicting costs outside the relevant range. Which is correct?</p>`,
+    options:["statement 1 correct, statement 2 incorrect","both statements are incorrect","statement 1 incorrect, statement 2 correct","both statements are correct"],
+    answer:1, solution:`<p><b>Both incorrect.</b> The engineering method suits new/non-repetitive processes; regression shouldn't extrapolate outside the relevant range.</p>` },
+]},
+{ title:"MA — Cost Allocation (Intergalaxy)", items:[
+  { id:"7a", pts:3.0, type:"numeric", context:R25_INTER,
+    prompt:`<p class="instr">Overhead allocated to FREIGHT under the traditional (light-years) system.</p>`,
+    fields:[{label:"FREIGHT overhead",pre:"$",value:630000,tol:1}],
+    solution:`<p>Rate = 945,000 / (630,000 + 315,000) = $1/light-year. FREIGHT = 630,000 × $1 = <b>$630,000</b>.</p>` },
+  { id:"7b", pts:7.0, type:"numeric", context:R25_INTER,
+    prompt:`<p class="instr">Compute the activity rates and the total overhead allocated to FREIGHT under ABC.</p>`,
+    fields:[{label:"Mission Coordination rate",pre:"$",value:90,tol:0.5},{label:"Passenger Services rate",pre:"$",value:15,tol:0.5},{label:"FREIGHT total overhead",pre:"$",value:405000,tol:1}],
+    solution:`<p>Mission = 540,000/6,000 = $90/mission; Passenger = 405,000/27,000 = $15/passenger. FREIGHT = 4,000×90 + 3,000×15 = 360,000 + 45,000 = <b>$405,000</b>.</p>` },
+]},
+{ title:"MA — Decision-Making (SodaCo)", items:[
+  { id:"8a", pts:3.0, type:"numeric", context:R25_SODACO,
+    prompt:`<p class="instr">Calculate the contribution margin for the BerryFizz product line.</p>`,
+    fields:[{label:"Contribution margin",pre:"$",value:5000,tol:1}],
+    solution:`<p>13,000 − 5,000 (var production) − 3,000 (var period) = <b>$5,000</b>.</p>` },
+  { id:"8b", pts:5.0, type:"numeric", context:R25_SODACO,
+    prompt:`<p class="instr">Total budgeted profit if BerryFizz is dropped (no other changes).</p>`,
+    fields:[{label:"Total profit",pre:"$",value:6000,tol:1}],
+    solution:`<p>Dropping the column removes BerryFizz entirely → company profit = LimePop's reported $6,000.</p>` },
+  { id:"8c", pts:5.0, type:"numeric", context:R25_SODACO, uncertain:true,
+    prompt:`<p class="instr">Total budgeted profit if BerryFizz is dropped and LimePop's sales &amp; variable costs rise 10%.</p>`,
+    fields:[{label:"Total profit",pre:"$",value:9600,tol:5}],
+    solution:`<p>Recorded answer: <b>$9,600</b>.</p>
+    <p class="warn">&#9888; The official $9,600 couldn't be reconciled with the straightforward scaling (which gives ~$7,400). Verify this one against your course's model answer.</p>` },
+]},
+{ title:"MA — Budgeting & Variances (Flex)", items:[
+  { id:"9a", pts:6.0, type:"numeric", context:R25_FLEX,
+    prompt:`<p class="instr">Calculate the flexible-budget amounts for direct material and variable production overhead.</p>`,
+    fields:[{label:"Direct material",pre:"$",value:52500,tol:1},{label:"Variable production overhead",pre:"$",value:45000,tol:1}],
+    solution:`<p>At actual output 15,000 units: DM = 15,000 × 0.5 kg × $7 = <b>$52,500</b>; VPO = (15,000 × 0.6 hr) × $5 = <b>$45,000</b>.</p>` },
+  { id:"9b", pts:9.0, type:"numeric", context:R25_FLEX,
+    prompt:`<p class="instr">Calculate the direct labor price (rate) variance (state magnitude; Adverse/Favourable — see solution).</p>`,
+    fields:[{label:"Labor price variance",pre:"$",value:12000,tol:1}],
+    solution:`<p>(Standard − actual rate) × actual hours = (6 − 7) × 12,000 = <b>$12,000 Adverse</b> (actual rate = 84,000/12,000 = $7).</p>` },
+]},
+{ title:"MA — Cost Estimation (Star)", items:[
+  { id:"10a", pts:4.0, type:"numeric", context:R25_STAR,
+    prompt:`<p class="instr">Expected overhead costs if output reaches 1,000 units (2 DLH/unit).</p>`,
+    fields:[{label:"Overhead costs",pre:"$",value:7900,tol:1}],
+    solution:`<p>2,000 DLH → 7,000 + 0.45×2,000 = <b>$7,900</b>.</p>` },
+  { id:"10b", pts:3.0, type:"numeric", context:R25_STAR,
+    prompt:`<p class="instr">What percentage of variation in overhead costs is explained by the cost driver?</p>`,
+    fields:[{label:"Variation explained",suf:"%",value:88,tol:0.5}],
+    solution:`<p>R² = 0.88 → <b>88%</b> of the variation is explained by direct labour hours.</p>` },
 ]},
 ];
 
 const PAPERS = {
   '2024': { label:'2024', data:EXAM_2024 },
-  '2023': { label:'2023', data:EXAM_2023 }
+  '2023': { label:'2023', data:EXAM_2023 },
+  'f2025': { label:'2025 Final', data:EXAM_2025_FINAL },
+  'r2025': { label:'2025 Resit', data:EXAM_2025_RESIT }
 };
 
 /* ===================== STATE ===================== */
@@ -1252,9 +1669,10 @@ function resultLine(q){const r=S.results.per[q.id];const lab={correct:'&#10003; 
 
 /* ===================== SIDEBAR ===================== */
 function renderSidebar(){
-  document.getElementById('paper2024').classList.toggle('active',PAPER==='2024');
-  document.getElementById('paper2023').classList.toggle('active',PAPER==='2023');
-  document.getElementById('subline').textContent=PAPERS[PAPER].label+' paper · '+TOTAL+' questions';
+  const sel=document.getElementById('paperSel');
+  if(sel&&!sel.options.length){for(const k in PAPERS){const o=document.createElement('option');o.value=k;o.textContent=PAPERS[k].label;sel.appendChild(o);}}
+  if(sel)sel.value=PAPER;
+  document.getElementById('subline').textContent=PAPERS[PAPER].label+' · '+TOTAL+' questions';
   document.getElementById('modeSowiso').classList.toggle('active',S.mode==='sowiso');
   document.getElementById('modeExam').classList.toggle('active',S.mode==='exam');
   document.getElementById('modeHint').innerHTML = S.phase==='submitted' ? 'Reviewing your handed-in answers.' : (S.mode==='sowiso'?'Practice: Check &amp; Solution after each question.':'Exam: no feedback until you hand in.');
